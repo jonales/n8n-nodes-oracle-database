@@ -1,96 +1,51 @@
 {
-	"name": "@jonales/n8n-nodes-oracle-database",
-	"type": "commonjs",
-	"version": "1.0.2",
-	"description": "Oracle Database node com recursos avançados para cargas pesadas e Oracle 19c+. Suporte completo para PL/SQL, bulk operations, connection pooling e Oracle Cloud Infrastructure.",
-	"keywords": [
-		"n8n-community-node-package",
-		"oracle"
-	],
-	"license": "MIT",
-	"homepage": "https://github.com/jonales/n8n-nodes-oracle-database",
-	"author": {
-		"name": "Jônatas Meireles Sousa Vieira",
-		"email": "jonatas.mei@outlook.com"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/jonales/n8n-nodes-oracle-database.git"
-	},
-	"main": "index.js",
-	"scripts": {
-		"postinstall": "node -e \"console.log('Oracle node installed successfully')\"",
-		"preinstall": "npx only-allow npm",
-		"clean": "npx rimraf dist tsconfig.tsbuildinfo",
-		"prebuild": "npm run clean",
-		"build": "tsc -p tsconfig.json && gulp build:icons",
-		"build:watch": "tsc -p tsconfig.json --watch",
-		"build:assets": "npx gulp build:assets",
-		"dev": "npm run build:watch",
-		"format": "prettier . --write --ignore-path .gitignore",
-		"format:check": "prettier . --check --ignore-path .gitignore",
-		"lint": "eslint . --ext .ts,.js --cache",
-		"lint:fix": "eslint . --ext .ts,.js --cache --fix",
-		"type-check": "tsc --noEmit -p tsconfig.json",
-		"prepublishOnly": "npm run clean && npm run build && npm run lint",
-		"prepare": "husky",
-		"validate": "npm run type-check && npm run lint",
-		"dev:assets": "npx gulp watch",
-		"clean:dist": "npx gulp cleanup:dist"
-	},
-	"files": [
-		"dist",
-		"index.js",
-		"README.md",
-		"LICENSE.md"
-	],
-	"n8n": {
-		"n8nNodesApiVersion": 1,
-		"credentials": [
-			"dist/credentials/Oracle.credentials.js"
-		],
-		"nodes": [
-			"dist/nodes/Oracle/OracleDatabase.node.js",
-			"dist/nodes/Oracle/OracleDatabaseAdvanced.node.js",
-			"dist/nodes/Oracle/OracleVectorStore.node.js",
-			"dist/nodes/Oracle/ChatMemory.node.js"
-		]
-	},
-	"devDependencies": {
-		"@eslint/config-array": "^0.18.0",
-		"@eslint/js": "^9.33.0",
-		"@eslint/object-schema": "^2.1.6",
-		"@sentry/node": "^10.5.0",
-		"@stylistic/eslint-plugin-js": "^4.4.1",
-		"@types/express": "^5.0.3",
-		"@types/nock": "^10.0.3",
-		"@types/node": "^22.10.5",
-		"@types/oracledb": "^6.9.1",
-		"@types/request-promise-native": "~1.0.21",
-		"@types/ssh2": "^1.15.5",
-		"@typescript-eslint/eslint-plugin": "^8.39.1",
-		"@typescript-eslint/parser": "^8.40.0",
-		"eslint": "^9.33.0",
-		"eslint-config-prettier": "^9.1.0",
-		"eslint-plugin-import": "^2.31.0",
-		"eslint-plugin-n8n-nodes-base": "^1.16.3",
-		"eslint-plugin-prettier": "^5.2.1",
-		"globals": "^16.3.0",
-		"gulp": "^5.0.1",
-		"husky": "^9.1.7",
-		"jest": "^30.0.5",
-		"merge-stream": "^2.0.0",
-		"n8n-core": "^1.106.2",
-		"n8n-workflow": "^1.105.0",
-		"prettier": "^3.6.2",
-		"prettier-plugin-organize-imports": "^4.2.0",
-		"rimraf": "^6.0.1",
-		"ts-jest": "^29.4.1",
-		"typescript": "~5.9.2"
-	},
-	"dependencies": {
-	"oracledb": "^6.9.0",
-	"n8n-core": "^1.106.2",
-	"n8n-workflow": "^1.105.0"
-	}
+  "name": "@jonales/n8n-nodes-oracle-database",
+  "type": "commonjs",
+  "version": "1.0.3",
+  "description": "Oracle Database node com recursos avançados para cargas pesadas e Oracle 19c+. Suporte completo para PL/SQL, bulk operations, connection pooling e Oracle Cloud Infrastructure.",
+  "keywords": [
+    "n8n-community-node-package",
+    "oracle"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/jonales/n8n-nodes-oracle-database",
+  "author": {
+    "name": "Jônatas Meireles Sousa Vieira",
+    "email": "jonatas.mei@outlook.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jonales/n8n-nodes-oracle-database.git"
+  },
+  "main": "index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && gulp build:icons",
+    "dev": "tsc --watch",
+    "lint": "eslint . --ext .ts,.js --cache",
+    "prepublishOnly": "npm run build"
+  },
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/Oracle.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Oracle/OracleDatabase.node.js",
+      "dist/nodes/Oracle/OracleDatabaseAdvanced.node.js",
+      "dist/nodes/Oracle/OracleVectorStore.node.js",
+      "dist/nodes/Oracle/ChatMemory.node.js"
+    ]
+  },
+  "dependencies": {
+    "oracledb": "^6.9.0"
+  },
+  "devDependencies": {
+    "gulp": "^5.0.1",
+    "typescript": "~4.6.0",
+    "n8n-core": "^0.125.0",
+    "n8n-workflow": "^0.107.0"
+  }
 }
