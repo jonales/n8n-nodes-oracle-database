@@ -9,6 +9,9 @@ import {
 import oracledb, { Connection } from 'oracledb';
 import { OracleConnectionPool } from './core/connectionPool';
 
+// Constante para DB_TYPE_VECTOR (Oracle 23ai)
+const DB_TYPE_VECTOR = (oracledb as any).DB_TYPE_VECTOR || 2023;
+
 export class OracleVectorStoreOperations {
   private executeFunctions: IExecuteFunctions;
 
@@ -157,7 +160,7 @@ export class OracleVectorStoreOperations {
         const bindParams = {
           id: documentId,
           content: content,
-          embedding: { type: oracledb.DB_TYPE_VECTOR, val: embedding },
+          embedding: { type: DB_TYPE_VECTOR, val: embedding },
           metadata: metadata,
         };
 
@@ -235,7 +238,7 @@ export class OracleVectorStoreOperations {
       `;
 
       const bindParams = {
-        searchVector: { type: oracledb.DB_TYPE_VECTOR, val: searchVector },
+        searchVector: { type: DB_TYPE_VECTOR, val: searchVector },
         threshold: threshold,
         limit: limit,
       };
@@ -327,7 +330,7 @@ export class OracleVectorStoreOperations {
           throw new Error('Embedding deve ser um array de números válidos para atualização');
         }
         updateFields.push('embedding = :embedding');
-        bindParams.embedding = { type: oracledb.DB_TYPE_VECTOR, val: embedding };
+        bindParams.embedding = { type: DB_TYPE_VECTOR, val: embedding };
       }
       if (metadataObj !== undefined) {
         updateFields.push('metadata = :metadata');
