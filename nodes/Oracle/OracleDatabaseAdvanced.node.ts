@@ -7,16 +7,20 @@ import {
   NodeConnectionType,
   NodeOperationError,
 } from 'n8n-workflow';
+
 import oracledb, { Connection } from 'oracledb';
 
-import { AQOperations } from './core/aqOperations';
-import { BulkOperationsFactory } from './core/bulkOperations';
-import { OracleConnectionPool } from './core/connectionPool';
-import { PLSQLExecutorFactory } from './core/plsqlExecutor';
-import { TransactionManagerFactory } from './core/transactionManager';
+import {
+  OracleConnectionPool,
+  AQOperations,
+  BulkOperationsFactory,
+  OracleCredentials,
+  TransactionManagerFactory,
+  ConnectionConfig,
+  OracleConnection,
+  PLSQLExecutorFactory
+} from './core';
 
-import { ConnectionConfig, OracleConnection } from './core/connection';
-import { OracleCredentials } from './core/types/oracle.credentials.type';
 
 /**
  * Interface para parâmetros dos nodes
