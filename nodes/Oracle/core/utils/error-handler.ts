@@ -1,14 +1,3 @@
-/**
- * Utilitários para error handling padronizado
- * Oracle Database N8N Nodes
- *
- * @author Jônatas Meireles Sousa Vieira
- * @version 1.0.0
- */
-
-/**
- * Formatar erro de forma consistente
- */
 export function formatError(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
