@@ -1,31 +1,29 @@
 {
   "compilerOptions": {
-    "lib": [
-      "es2021",
-      "dom"
-    ],
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "module": "commonjs",
     "target": "es2021",
-    "rootDir": "./",
+    "lib": ["es2021"],
+    "strict": false,
+    "skipLibCheck": true,
+    "rootDir": ".",
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "outDir": "./dist",
-    "typeRoots": [
-      "./node_modules/@types"
-    ],
-    "skipLibCheck": true
+    "typeRoots": ["./node_modules/@types"],
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
     "credentials/**/*",
     "nodes/**/*"
   ],
   "exclude": [
-    "node_modules/**/*"
+    "node_modules/**/*",
+    "dist/**/*",
+    "test/**/*"
   ]
 }
