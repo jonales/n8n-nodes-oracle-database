@@ -19,6 +19,7 @@
 	},
 	"main": "index.js",
 	"scripts": {
+		"postinstall": "node -e \"console.log('Oracle node installed successfully')\"",
 		"preinstall": "npx only-allow npm",
 		"clean": "npx rimraf dist tsconfig.tsbuildinfo",
 		"prebuild": "npm run clean",
@@ -88,6 +89,8 @@
 		"typescript": "~5.9.2"
 	},
 	"dependencies": {
-		"oracledb": "^6.9.0"
+	"oracledb": "^6.9.0",
+	"n8n-core": "^1.106.2",
+	"n8n-workflow": "^1.105.0"
 	}
 }
