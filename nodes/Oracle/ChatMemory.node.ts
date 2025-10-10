@@ -7,7 +7,8 @@ import {
   NodeOperationError,
 } from 'n8n-workflow';
 import oracledb, { Connection } from 'oracledb';
-import { OracleConnectionPool } from './core/connectionPool';
+
+import {OracleConnectionPool} from './core';
 
 export class OracleChatMemoryOperations {
   private executeFunctions: IExecuteFunctions;
