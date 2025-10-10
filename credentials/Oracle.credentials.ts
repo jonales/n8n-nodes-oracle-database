@@ -1,4 +1,4 @@
-import { ICredentialType, INodeProperties } from 'n8n-workflow';
+﻿import { ICredentialType, INodeProperties } from 'n8n-workflow';
 
 export type IOracleCredentials = {
 	user: string;
@@ -110,15 +110,15 @@ export class Oracle implements ICredentialType {
         theme: 'info',
       },
       description: `
-        <strong>📡 Thin Mode (Recomendado para a maioria dos casos)</strong><br/>
-        ✅ <strong>Vantagens:</strong><br/>
+        <strong>Thin Mode (Recomendado para a maioria dos casos)</strong><br/>
+        SUCCESS <strong>Vantagens:</strong><br/>
         • Não requer instalação do Oracle Client<br/>
         • Funciona em qualquer ambiente Node.js<br/>
         • Mais fácil para deploy em containers<br/>
         • Menor complexidade de configuração<br/>
         • Suporta a maioria das funcionalidades Oracle<br/>
         <br/>
-        ⚠️ <strong>Limitações:</strong><br/>
+        WARNING️ <strong>Limitações:</strong><br/>
         • Não suporta alguns recursos avançados (ex: Oracle Wallets, Kerberos)<br/>
         • Performance pode ser ligeiramente inferior para algumas operações<br/>
         • Não suporta Oracle Net Services avançados
@@ -138,14 +138,14 @@ export class Oracle implements ICredentialType {
         theme: 'warning',
       },
       description: `
-        <strong>🏗️ Thick Mode (Para recursos avançados)</strong><br/>
-        ✅ <strong>Vantagens:</strong><br/>
+        <strong>Thick Mode (Para recursos avançados)</strong><br/>
+        SUCCESS <strong>Vantagens:</strong><br/>
         • Suporte completo a todos os recursos Oracle<br/>
         • Melhor performance para operações complexas<br/>
         • Suporte a Oracle Wallets, Kerberos, LDAP<br/>
         • Suporte completo ao Oracle Net Services<br/>
         <br/>
-        ⚠️ <strong>Requisitos:</strong><br/>
+        WARNING️ <strong>Requisitos:</strong><br/>
         • Oracle Instant Client deve estar instalado<br/>
         • LD_LIBRARY_PATH deve estar configurado (Linux/macOS)<br/>
         • PATH deve incluir Oracle Client (Windows)<br/>
@@ -166,7 +166,7 @@ export class Oracle implements ICredentialType {
         theme: 'info',
       },
       description: `
-        <strong>📋 Guia de Instalação - Oracle Instant Client</strong><br/>
+        <strong>Guia de Instalação - Oracle Instant Client</strong><br/>
         
         <strong>Linux:</strong><br/>
         1. Baixe Oracle Instant Client: <a href="https://www.oracle.com/database/technologies/instant-client/linux-x86-64-downloads.html" target="_blank">Download</a><br/>
