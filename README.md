@@ -292,6 +292,61 @@ npm run validate
 
 ---
 
+### **Support the Project:**
+
+<div align="center">
+
+### PIX:
+
+<img src="image/README/qrcode-pix-jonatas.mei@outlook.com.png" alt="QR Code PIX" width="150" />
+
+**PIX Key:** jonatas.mei@outlook.com
+
+### Cryptocurrency Donation
+
+<table style="width:100%; border:none;">
+  <tr style="border:none;">
+    <td style="text-align:center; padding:10px; border:none;">
+      <h4>Bitcoin (BTC)</h4>
+      <img src="image/README/btc.jpeg" alt="QR Code BTC" width="150" />
+      <br>
+      <code>bc1qdq9rj7565c4fvr7t3xut6z0tjd65p4mudrc0ll</code>
+      <br>
+      <a href="https://link.trustwallet.com/send?asset=c0&address=bc1qdq9rj7565c4fvr7t3xut6z0tjd65p4mudrc0ll">Pay with Trust Wallet</a>
+    </td>
+    <td style="text-align:center; padding:10px; border:none;">
+      <h4>Ethereum (ETH)</h4>
+      <img src="image/README/eth.jpeg" alt="QR Code ETH" width="150" />
+      <br>
+      <code>0xA35A984401Ae9c81ca2d742977E603421df45419</code>
+      <br>
+      <a href="https://link.trustwallet.com/send?address=0xA35A984401Ae9c81ca2d742977E603421df45419&asset=c60">Pay with Trust Wallet</a>
+    </td>
+  </tr>
+  <tr style="border:none;">
+    <td style="text-align:center; padding:10px; border:none;">
+      <h4>Binance (BNB)</h4>
+      <img src="image/README/bnb.jpeg" alt="QR Code BNB" width="150" />
+      <br>
+      <code>0xA35A984401Ae9c81ca2d742977E603421df45419</code>
+      <br>
+      <a href="https://link.trustwallet.com/send?address=0xA35A984401Ae9c81ca2d742977E603421df45419&asset=c20000714">Pay with Trust Wallet</a>
+    </td>
+    <td style="text-align:center; padding:10px; border:none;">
+      <h4>Polygon (POL)</h4>
+      <img src="image/README/pol.jpeg" alt="QR Code POL" width="150" />
+      <br>
+      <code>0xA35A984401Ae9c81ca2d742977E603421df45419</code>
+      <br>
+      <a href="https://link.trustwallet.com/send?asset=c966&address=0xA35A984401Ae9c81ca2d742977E603421df45419">Pay with Trust Wallet</a>
+    </td>
+  </tr>
+</table>
+
+</div>
+
+---
+
 ## 📄 License
 
 This project is under **MIT License** - see [LICENSE.md](LICENSE.md) for details.
@@ -601,6 +656,61 @@ npm run validate
 3. Implementar mudanças
 4. Executar `npm run validate`
 5. Criar Pull Request
+
+---
+
+### **Apoie o Projeto:**
+
+<div align="center">
+
+### PIX:
+
+<img src="image/README/qrcode-pix-jonatas.mei@outlook.com.png" alt="QR Code PIX" width="150" />
+
+**Chave PIX:** jonatas.mei@outlook.com
+
+### Doação em Criptomoeda
+
+<table style="width:100%; border:none;">
+  <tr style="border:none;">
+    <td style="text-align:center; padding:10px; border:none;">
+      <h4>Bitcoin (BTC)</h4>
+      <img src="image/README/btc.jpeg" alt="QR Code BTC" width="150" />
+      <br>
+      <code>bc1qdq9rj7565c4fvr7t3xut6z0tjd65p4mudrc0ll</code>
+      <br>
+      <a href="https://link.trustwallet.com/send?asset=c0&address=bc1qdq9rj7565c4fvr7t3xut6z0tjd65p4mudrc0ll">Pagar com Trust Wallet</a>
+    </td>
+    <td style="text-align:center; padding:10px; border:none;">
+      <h4>Ethereum (ETH)</h4>
+      <img src="image/README/eth.jpeg" alt="QR Code ETH" width="150" />
+      <br>
+      <code>0xA35A984401Ae9c81ca2d742977E603421df45419</code>
+      <br>
+      <a href="https://link.trustwallet.com/send?address=0xA35A984401Ae9c81ca2d742977E603421df45419&asset=c60">Pagar com Trust Wallet</a>
+    </td>
+  </tr>
+  <tr style="border:none;">
+    <td style="text-align:center; padding:10px; border:none;">
+      <h4>Binance (BNB)</h4>
+      <img src="image/README/bnb.jpeg" alt="QR Code BNB" width="150" />
+      <br>
+      <code>0xA35A984401Ae9c81ca2d742977E603421df45419</code>
+      <br>
+      <a href="https://link.trustwallet.com/send?address=0xA35A984401Ae9c81ca2d742977E603421df45419&asset=c20000714">Pagar com Trust Wallet</a>
+    </td>
+    <td style="text-align:center; padding:10px; border:none;">
+      <h4>Polygon (POL)</h4>
+      <img src="image/README/pol.jpeg" alt="QR Code POL" width="150" />
+      <br>
+      <code>0xA35A984401Ae9c81ca2d742977E603421df45419</code>
+      <br>
+      <a href="https://link.trustwallet.com/send?asset=c966&address=0xA35A984401Ae9c81ca2d742977E603421df45419">Pagar com Trust Wallet</a>
+    </td>
+  </tr>
+</table>
+
+</div>
 
 ---
 
