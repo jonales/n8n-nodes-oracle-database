@@ -1,33 +1,23 @@
 {
   "compilerOptions": {
-    "lib": ["es2017", "es2019", "es2021", "dom"],
-    "types": ["node"],
     "module": "commonjs",
-    "noImplicitAny": true,
-    "removeComments": true,
-    "strictNullChecks": true,
-    "strict": true,
-    "preserveConstEnums": true,
-    "resolveJsonModule": true,
-    "declaration": true,
-    "outDir": "./dist/",
-    "target": "es2021",
-    "sourceMap": true,
+    "target": "es6",
+    "rootDir": "./",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
     "esModuleInterop": true,
-    "useUnknownInCatchVariables": false,
-    "skipLibCheck": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "outDir": "./dist",
+    "typeRoots": [
+      "./node_modules/@types"
+    ]
   },
   "include": [
-    "credentials/**/*", 
-    "nodes/**/*", 
-    "package.json"
+    "credentials/**/*",
+    "nodes/**/*"
   ],
   "exclude": [
-    "node_modules", 
-    "dist", 
-    "**/*.test.ts", 
-    "**/*.spec.ts",
-    "script/**/*"
+    "node_modules/**/*"
   ]
 }
