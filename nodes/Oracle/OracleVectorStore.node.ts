@@ -7,7 +7,7 @@ import {
   NodeOperationError,
 } from 'n8n-workflow';
 import oracledb, { Connection } from 'oracledb';
-import { OracleConnectionPool } from './core/connectionPool';
+import { OracleConnectionPool} from './core';
 
 // Constante para DB_TYPE_VECTOR (Oracle 23ai)
 const DB_TYPE_VECTOR = (oracledb as any).DB_TYPE_VECTOR || 2023;
