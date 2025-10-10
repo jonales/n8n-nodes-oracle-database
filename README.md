@@ -17,7 +17,7 @@
 
 Advanced **Oracle Database** node for [n8n](https://n8n.io/) with **enterprise features for heavy workloads** and complete support for **Oracle 19c+**.
 
-> **🚀 Version 1.0.2-rc.1 - Clean Architecture**
+> **🚀 Version 1.0.2 - Clean Architecture**
 >
 > - **Thin Mode** (default) - Zero configuration, works in any environment
 > - **Thick Mode** - Maximum performance with Oracle Client for critical loads
@@ -214,7 +214,7 @@ oracle-rds.cluster-xyz.region.rds.amazonaws.com:1521/ORCL
 
 ---
 
-## 🔧 Key Changes in Version 1.0.2-rc.1
+## 🔧 Key Changes in Version 1.0.2
 
 ### ✅ **What Was Removed:**
 - Automatic Oracle Client installation scripts
@@ -384,7 +384,7 @@ This project is under **MIT License** - see [LICENSE.md](LICENSE.md) for details
 
 Node avançado **Oracle Database** para [n8n](https://n8n.io/) com **recursos empresariais para cargas pesadas** e suporte completo ao **Oracle 19c+**.
 
-> **🚀 Versão 1.0.2-rc.1 - Arquitetura Limpa**
+> **🚀 Versão 1.0.2 - Arquitetura Limpa**
 >
 > - **Thin Mode** (padrão) - Zero configuração, funciona em qualquer ambiente
 > - **Thick Mode** - Performance máxima com Oracle Client para cargas críticas
@@ -581,7 +581,7 @@ oracle-rds.cluster-xyz.region.rds.amazonaws.com:1521/ORCL
 
 ---
 
-## 🔧 Principais Mudanças na Versão 1.0.2-rc.1
+## 🔧 Principais Mudanças na Versão 1.0.2
 
 ### ✅ **O que foi Removido:**
 - Scripts de instalação automática do Oracle Client
@@ -737,7 +737,7 @@ src/
 
 ## 📝 Changelog
 
-### v1.0.2-rc.1
+### v1.0.2
 - ✅ Removido scripts de instalação Oracle Client
 - ✅ Simplificada arquitetura de instalação
 - ✅ Melhor compatibilidade com n8n community nodes
@@ -745,7 +745,7 @@ src/
 - ✅ Auto-detecção mantida no código TypeScript
 
 ### v1.0.1-rc.14
-- ✅ Scripts de instalação automática (removidos em 1.0.2-rc.1)
+- ✅ Scripts de instalação automática (removidos em 1.0.2)
 - ✅ Funcionalidades completas Oracle
 
 ---
