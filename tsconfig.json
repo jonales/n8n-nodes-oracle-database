@@ -1,7 +1,14 @@
 {
   "compilerOptions": {
+    "lib": [
+      "es2021",
+      "dom"
+    ],
+    "types": [
+      "node"
+    ],
     "module": "commonjs",
-    "target": "es6",
+    "target": "es2021",
     "rootDir": "./",
     "moduleResolution": "node",
     "experimentalDecorators": true,
@@ -11,7 +18,8 @@
     "outDir": "./dist",
     "typeRoots": [
       "./node_modules/@types"
-    ]
+    ],
+    "skipLibCheck": true
   },
   "include": [
     "credentials/**/*",
