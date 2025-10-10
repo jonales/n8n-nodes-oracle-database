@@ -7,7 +7,11 @@ import {
   NodeOperationError,
 } from 'n8n-workflow';
 import oracledb from 'oracledb';
-import { OracleConnection } from './core/connection';
+
+import {
+  OracleConnection
+} from './core';
+
 
 export class OracleDatabaseOperations {
   async executeOperation(
