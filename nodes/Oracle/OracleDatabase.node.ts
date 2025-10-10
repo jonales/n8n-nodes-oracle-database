@@ -79,7 +79,7 @@ export class OracleDatabaseOperations {
               }
 
               generatedSqlString = generatedSqlString.slice(0, -1) + ')';
-              query = query.replaceAll(':' + item.name, generatedSqlString);
+              query = query.split(':' + item.name).join(generatedSqlString);
               return result;
             }
           },
