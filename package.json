@@ -1,7 +1,7 @@
 {
   "name": "@jonales/n8n-nodes-oracle-database",
   "type": "commonjs",
-  "version": "1.0.7",
+  "version": "1.0.6",
   "description": "Oracle Database node com recursos avançados para cargas pesadas e Oracle 19c+. Suporte completo para PL/SQL, bulk operations, connection pooling e Oracle Cloud Infrastructure.",
   "keywords": [
     "n8n-community-node-package",
