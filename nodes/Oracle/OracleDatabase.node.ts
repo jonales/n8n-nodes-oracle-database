@@ -38,7 +38,7 @@ export class OracleDatabaseOperations {
       const bindParameters: { [key: string]: oracledb.BindParameter } =
         parameterIDataObjectList.reduce(
           (result: { [key: string]: oracledb.BindParameter }, item) => {
-            let datatype: oracledb.DbType | undefined = undefined;
+            let datatype: any | undefined = undefined;
             if (item.datatype && item.datatype === 'number') {
               datatype = oracledb.NUMBER;
             } else {
