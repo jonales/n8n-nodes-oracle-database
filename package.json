@@ -18,23 +18,20 @@
     "url": "git+https://github.com/jonales/n8n-nodes-oracle-database.git"
   },
   "files": [
-    "dist/**/*.js",
-    "dist/**/*.d.ts",
-    "dist/**/*.json",
-    "dist/**/*.svg",
-    "dist/**/*.png",
-    "!dist/**/*.ts"
+    "dist"
   ],
   "scripts": {
-    "dev": "tsc --watch",
-    "lint": "eslint . --ext .ts,.js --cache",
-    "prebuild": "rimraf dist",
-    "build": "tsc && gulp build:icons",
-    "verify": "node -e \"const fs=require('fs'); const files=['dist/credentials/Oracle.credentials.js','dist/nodes/Oracle/OracleDatabase.node.js']; files.forEach(f=>{ if(!fs.existsSync(f)) throw new Error('Missing: '+f); });\"",
-    "prepublishOnly": "npm run build && npm run verify"
+    "dev": "n8n-node dev",
+    "build": "n8n-node build",
+    "build:watch": "tsc --watch",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "release": "n8n-node release",
+    "prepublishOnly": "n8n-node prerelease"
   },
   "n8n": {
     "n8nNodesApiVersion": 1,
+    "strict": false,
     "credentials": [
       "dist/credentials/Oracle.credentials.js"
     ],
@@ -49,21 +46,16 @@
     "oracledb": "^6.9.0"
   },
   "devDependencies": {
+    "@n8n/node-cli": "^0.17.0",
     "@types/express": "^4.17.23",
     "@types/node": "^18.19.130",
     "@types/oracledb": "^5.3.1",
-    "gulp": "^5.0.1",
-    "n8n-core": "^1.0.0",
-    "n8n-workflow": "^1.0.0",
-    "rimraf": "^6.0.1",
-    "typescript": "~5.2.0"
+    "eslint": "9.32.0",
+    "prettier": "3.6.2",
+    "release-it": "^19.0.4",
+    "typescript": "5.9.2"
   },
   "peerDependencies": {
-    "oracledb": ">=6.0.0"
-  },
-  "peerDependenciesMeta": {
-    "oracledb": {
-      "optional": false
-    }
+    "n8n-workflow": "*"
   }
 }

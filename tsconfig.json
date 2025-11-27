@@ -4,7 +4,7 @@
     "module": "commonjs",
     "target": "es2019",
     "lib": ["es2017", "es2019"],
-    "strict": false,
+    "strict": true,
     "skipLibCheck": true,
     "rootDir": ".",
     "moduleResolution": "node",
