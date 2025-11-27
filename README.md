@@ -17,12 +17,13 @@
 
 Advanced **Oracle Database** node for [n8n](https://n8n.io/) with **enterprise features for heavy workloads** and complete support for **Oracle 19c+**.
 
-> **🚀 Version 1.0.2 - Clean Architecture**
+> **🚀 Version 1.0.9 - Padrão Oficial n8n**
 >
+> - **Build System Atualizado** - Agora usa @n8n/node-cli (padrão oficial)
+> - **Instalação Corrigida** - Erro "Error loading package" resolvido
 > - **Thin Mode** (default) - Zero configuration, works in any environment
 > - **Thick Mode** - Maximum performance with Oracle Client for critical loads
 > - **Automatic detection** of ideal mode based on environment
-> - **Simplified installation** without complex scripts
 
 ---
 
