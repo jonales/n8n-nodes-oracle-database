@@ -50,47 +50,13 @@ export class OracleConnection implements DatabaseConnection {
   }
 
   /**
-	 * Detecta e configura Oracle Client automaticamente
+	 * Detecta e configura Oracle Client automaticamente via variáveis de ambiente
 	 */
   private async autoDetectOracleClient(): Promise<void> {
     if (this.detectedConfig) {
-      return; // Já detectado
+      return;
     }
-
-    try {
-      // Importa utilitário de detecção (se disponível)
-      const { getOracleClientConfig } = require('../script/oracle-detector');
-
-      this.log('info', 'Auto-detectando Oracle Client...');
-
-      const config = await getOracleClientConfig({
-        autoInstall: this.connectionConfig.autoInstall,
-        forceThickMode: this.connectionConfig.mode === 'thick',
-        throwOnMissing: false,
-      });
-
-      this.detectedConfig = config;
-
-      // Atualiza configuração baseada na detecção
-      if (this.connectionConfig.mode === 'auto') {
-        this.connectionConfig.mode = config.mode;
-      }
-
-      if (config.libDir && !this.connectionConfig.libDir) {
-        this.connectionConfig.libDir = config.libDir;
-      }
-
-      this.log('info', `Oracle Client detectado: modo ${config.mode}`);
-      if (config.libDir) {
-        this.log('debug', `LibDir: ${config.libDir}`);
-      }
-    } catch (error) {
-      this.log('info', 'Auto-detecção falhou, usando detecção manual');
-      this.log('debug', `Erro: ${error instanceof Error ? error.message : String(error)}`);
-
-      // Fallback para detecção manual
-      await this.fallbackDetection();
-    }
+    await this.fallbackDetection();
   }
 
   /**
@@ -167,13 +133,6 @@ export class OracleConnection implements DatabaseConnection {
       const errorMessage = error instanceof Error ? error.message : String(error);
 
       if (errorMessage.includes('DPI-1047')) {
-        // Oracle Client não encontrado, tenta auto-instalação
-        if (this.connectionConfig.autoInstall) {
-          this.log('info', 'Oracle Client não encontrado, tentando instalação automática...');
-          await this.tryAutoInstall();
-          return; // Recursão será chamada após instalação
-        }
-
         throw new Error(
           'Oracle Client libraries não encontradas.\n' +
 						'Verifique se:\n' +
@@ -198,38 +157,6 @@ export class OracleConnection implements DatabaseConnection {
 					'- Compatibilidade da versão do Oracle Client\n' +
 					'- Execute: node script/setup-oracle.js --force',
       );
-    }
-  }
-
-  /**
-	 * Tenta instalação automática do Oracle Client
-	 */
-  private async tryAutoInstall(): Promise<void> {
-    try {
-      this.log('info', 'Executando instalação automática do Oracle Client...');
-
-      const OracleClientInstaller = require('../script/oracle-installer');
-      const installer = new OracleClientInstaller();
-
-      const result = await installer.run();
-
-      if (result?.libDir) {
-        this.connectionConfig.libDir = result.libDir;
-        this.log('info', 'Oracle Client instalado automaticamente');
-
-        // Tenta inicializar novamente
-        await this.initializeThickClient();
-      }
-    } catch (installError) {
-      this.log('info', 'Instalação automática falhou, mudando para modo thin');
-      this.log(
-        'debug',
-        `Erro de instalação: ${installError instanceof Error ? installError.message : String(installError)}`,
-      );
-
-      // Fallback para thin mode
-      this.connectionConfig.mode = 'thin';
-      this.configureThinMode();
     }
   }
 

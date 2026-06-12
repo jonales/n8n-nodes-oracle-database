@@ -1,9 +1,12 @@
+import crypto from 'crypto';
+
 import {
   IDataObject,
   IExecuteFunctions,
   INodeExecutionData,
   INodeType,
   INodeTypeDescription,
+  NodeConnectionType,
   NodeOperationError,
 } from 'n8n-workflow';
 import oracledb from 'oracledb';
@@ -61,10 +64,9 @@ export class OracleDatabaseOperations {
             } else {
               const valList = item.value.toString().split(',');
               let generatedSqlString = '(';
-              const crypto = require('crypto');
 
               for (let i = 0; i < valList.length; i++) {
-                const uniqueId: String = crypto.randomUUID().replaceAll('-', '_');
+                const uniqueId: string = crypto.randomUUID().replace(/-/g, '_');
                 const newParamName = item.name + uniqueId;
 
                 result[newParamName] = {
@@ -91,7 +93,7 @@ export class OracleDatabaseOperations {
         autoCommit: true,
       });
 
-      returnItems = executeFunctions.helpers.returnJsonArray(result as unknown as IDataObject[]);
+      returnItems = executeFunctions.helpers.returnJsonArray((result.rows ?? []) as IDataObject[]);
     } catch (error) {
       throw new NodeOperationError(executeFunctions.getNode(), (error as Error).message);
     } finally {
@@ -111,7 +113,7 @@ export class OracleDatabaseOperations {
 export class OracleDatabase implements INodeType {
   description: INodeTypeDescription = {
     displayName: 'Oracle Database',
-    name: 'Oracle Database',
+    name: 'oracleDatabase',
     icon: 'file:oracle.svg',
     group: ['input'],
     version: 1,
@@ -119,8 +121,8 @@ export class OracleDatabase implements INodeType {
     defaults: {
       name: 'Oracle Database',
     },
-    inputs: ['main'],
-    outputs: ['main'],
+    inputs: ['main' as NodeConnectionType],
+    outputs: ['main' as NodeConnectionType],
     credentials: [
       {
         name: 'oracleCredentials',

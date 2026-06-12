@@ -116,11 +116,16 @@ export class OracleDatabaseAdvancedOperations {
 
   // Função auxiliar para bulk operations
   async executeBulkOperations(conn: Connection): Promise<INodeExecutionData[]> {
+    const tableName = this.executeFunctions.getNodeParameter('bulkTableName', 0) as string;
     const inputData = this.executeFunctions.getInputData();
     const data = inputData.map((item: INodeExecutionData) => item.json);
 
+    if (!tableName) {
+      throw new Error('Table Name é obrigatório para Bulk Operations');
+    }
+
     const bulkOps = BulkOperationsFactory.createHighVolumeOperations(conn);
-    const result = await bulkOps.bulkInsert('target_table', data, {
+    const result = await bulkOps.bulkInsert(tableName, data, {
       batchSize: 5000,
       continueOnError: true,
       autoCommit: true,
@@ -228,6 +233,19 @@ export class OracleDatabaseAdvanced implements INodeType {
         ],
       },
       {
+        displayName: 'Table Name',
+        name: 'bulkTableName',
+        type: 'string',
+        default: '',
+        placeholder: 'e.g. MY_TABLE',
+        description: 'Nome da tabela destino para Bulk Operations',
+        displayOptions: {
+          show: {
+            operationType: ['bulk'],
+          },
+        },
+      },
+      {
         displayName: 'Parameters',
         name: 'params',
         placeholder: 'Add Parameter',
@@ -324,6 +342,8 @@ export class OracleDatabaseAdvanced implements INodeType {
         returnItems = await oracleAdvancedOps.executeQuery(connection);
         break;
       case 'plsql':
+      case 'procedure':
+      case 'function':
         returnItems = await oracleAdvancedOps.executePLSQL(connection);
         break;
       case 'bulk':
@@ -365,7 +385,7 @@ export class OracleDatabaseAdvanced implements INodeType {
       }
     }
 
-    return this.prepareOutputData(returnItems);
+    return [returnItems];
   }
 }
 

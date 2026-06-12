@@ -349,37 +349,3 @@ export class OracleConnectionPool {
   }
 }
 
-/**
- * Cleanup automático dos pools ao encerrar o processo
- */
-const handleProcessExit = async (signal: string) => {
-  console.log(`Recebido sinal ${signal}. Encerrando pools Oracle...`);
-  try {
-    await OracleConnectionPool.closeAllPools();
-    console.log('Pools fechados com sucesso');
-  } catch (error) {
-    console.error('Erro ao fechar pools:', error);
-  } finally {
-    process.exit(0);
-  }
-};
-
-process.on('SIGINT', () => handleProcessExit('SIGINT'));
-process.on('SIGTERM', () => handleProcessExit('SIGTERM'));
-
-// Limpeza adicional para outros eventos
-process.on('beforeExit', async () => {
-  await OracleConnectionPool.closeAllPools();
-});
-
-process.on('uncaughtException', async error => {
-  console.error('Erro não capturado:', error);
-  await OracleConnectionPool.closeAllPools();
-  process.exit(1);
-});
-
-process.on('unhandledRejection', async (reason, promise) => {
-  console.error('Promise rejeitada não tratada:', reason, 'em', promise);
-  await OracleConnectionPool.closeAllPools();
-  process.exit(1);
-});
