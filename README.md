@@ -5,322 +5,288 @@
 [![npm version](https://img.shields.io/npm/v/@jonales/n8n-nodes-oracle-database.svg)](https://www.npmjs.com/package/@jonales/n8n-nodes-oracle-database)
 [![npm downloads](https://img.shields.io/npm/dt/@jonales/n8n-nodes-oracle-database.svg)](https://www.npmjs.com/package/@jonales/n8n-nodes-oracle-database)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7.2-blue.svg)](https://www.typescriptlang.org/)
-[![Oracle](https://img.shields.io/badge/Oracle-12.1%2B-red.svg)](https://docs.oracle.com/en/database/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
+[![Oracle](https://img.shields.io/badge/Oracle-19c%2B-red.svg)](https://docs.oracle.com/en/database/)
+[![n8n](https://img.shields.io/badge/n8n-community--node-orange.svg)](https://docs.n8n.io/integrations/community-nodes/)
 
 <details>
 <summary>🇺🇸 English</summary>
 
 ---
 
-# 📖 Documentation in English
+# Oracle Database Node for n8n
 
-Advanced **Oracle Database** node for [n8n](https://n8n.io/) with **enterprise features for heavy workloads** and complete support for **Oracle 19c+**.
+Advanced **Oracle Database** node for [n8n](https://n8n.io/) with enterprise features for heavy workloads and complete support for **Oracle 19c+** and **Oracle 23ai**.
 
-> **🚀 Version 1.0.9 - Padrão Oficial n8n**
->
-> - **Build System Atualizado** - Agora usa @n8n/node-cli (padrão oficial)
-> - **Instalação Corrigida** - Erro "Error loading package" resolvido
-> - **Thin Mode** (default) - Zero configuration, works in any environment
-> - **Thick Mode** - Maximum performance with Oracle Client for critical loads
-> - **Automatic detection** of ideal mode based on environment
+> **Version 1.0.9** — Official n8n build system (`@n8n/node-cli`), full thin/thick mode support per credential.
 
 ---
 
-## 📋 About This Project
+## About
 
-Complete enterprise solution for **Oracle Database** in the **n8n** ecosystem, developed with modern architecture and support for both connection modes (thin/thick) of `node-oracledb 6.x`.
+A complete enterprise solution for **Oracle Database** in the **n8n** ecosystem, built with `node-oracledb 6.x` and supporting both connection modes — **Thin** (pure JS, zero Oracle Client required) and **Thick** (Oracle Client libraries, full feature set).
 
 **Developed by:** [Jônatas Meireles Sousa Vieira](https://github.com/jonales)  
-**Based on:** [n8n-nodes-oracle-database](https://github.com/matheuspeluchi/n8n-nodes-oracle-database) [by Matheus Peluchi]
+**Based on:** [n8n-nodes-oracle-database](https://github.com/matheuspeluchi/n8n-nodes-oracle-database) by Matheus Peluchi
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 n8n-nodes-oracle-database/
-│
-├── 📂 credentials/
+├── credentials/
 │   └── Oracle.credentials.ts           # Oracle credentials (thin/thick)
-│
-├── 📂 nodes/
-│   └── 📂 Oracle/
-│       ├── OracleDatabase.node.ts          # Basic node with parameterization
-│       ├── OracleDatabaseAdvanced.node.ts  # Advanced enterprise node
-│       ├── OracleVectorStore.node.ts       # Node for vector store creation
-│       ├── ChatMemory.node.ts              # Node for chat history storage
-│       ├── oracle.svg                      # Oracle symbol for nodes
-│       │
-│       └── 📂 core/
-│            ├── aqOperations.ts         # Oracle Advanced Queuing
-│            ├── bulkOperations.ts       # Bulk operations
-│            ├── connectionPool.ts       # Connection pooling
-│            ├── connection.ts           # Connection manager (thin/thick)
-│            ├── plsqlExecutor.ts        # PL/SQL executor
-│            ├── transactionManager.ts   # Transaction manager
-│            │
-│            ├── 📂 interfaces/
-│            │   └── database.interface.ts   # Interfaces for connections
-│            │
-│            ├── 📂 types/
-│            │   └── oracle.credentials.type.ts # Types for credentials
-│            │
-│            └── 📂 utils/
-│                └── error-handler.ts # Error handling utilities
-│            
-├── 📂 dist/                            # Compiled build (auto-generated)
-├── 📂 image/README/                    # README images
-├── 📂 node_modules/                    # Dependencies (auto-generated)
-│
-├── 📄 package.json                     # Project configuration
-├── 📄 tsconfig.json                    # TypeScript configuration
-├── 📄 eslint.config.js                 # ESLint configuration
-├── 📄 gulpfile.js                      # Build tasks
-├── 📄 LICENSE.md                       # MIT License
-├── 📄 README.md                        # This documentation
-├── 📄 prettier.config.cjs              # Prettier configuration  
-└── 📄 index.js                         # Entry point
+├── nodes/
+│   └── Oracle/
+│       ├── OracleDatabase.node.ts          # Basic node — SQL with bind variables
+│       ├── OracleDatabaseAdvanced.node.ts  # Advanced node — PL/SQL, bulk, AQ
+│       ├── OracleVectorStore.node.ts       # Vector store — Oracle 23ai
+│       ├── ChatMemory.node.ts              # Chat history — session management
+│       ├── oracle.svg
+│       └── core/
+│           ├── connection.ts           # Connection manager (thin/thick)
+│           ├── connectionPool.ts       # Connection pooling
+│           ├── bulkOperations.ts       # Bulk Insert/Update/Delete/Upsert
+│           ├── plsqlExecutor.ts        # PL/SQL anonymous blocks, procedures, functions
+│           ├── transactionManager.ts   # Transactions with savepoints
+│           ├── aqOperations.ts         # Oracle Advanced Queuing
+│           ├── interfaces/
+│           │   └── database.interface.ts
+│           ├── types/
+│           │   └── oracle.credentials.type.ts
+│           └── utils/
+│               └── error-handler.ts
+└── dist/                               # Compiled build (auto-generated)
 ```
 
 ---
 
-## ⭐ Revolutionary Features
+## Features
 
-### 🔧 **Clean Installation Architecture**
+### Connection Modes
 
-- ✅ **Thin Mode** (default) - Zero configuration, pure JavaScript client
-- ✅ **Thick Mode** - Maximum performance with Oracle Client libraries
-- ✅ **No installation scripts** - Compliant with n8n community standards
-- ✅ **Flexible configuration** - Complete control over connection mode
+| Mode | Oracle Client | Best for |
+|------|---------------|---------|
+| **Thin** (default) | Not required — pure JavaScript driver | Containers, cloud, quick setup |
+| **Thick** | Required — Oracle Instant Client | Wallets, Kerberos, LDAP, maximum performance |
 
-### 🏗️ **Enterprise Operations**
+> The mode is set **per credential** — each credential can use a different mode independently.
 
-- ✅ **Intelligent Connection Pooling** (Standard, High Volume, OLTP, Analytics)
-- ✅ **Bulk Operations** - Optimized mass Insert/Update/Delete/Upsert
-- ✅ **PL/SQL Executor** - Anonymous blocks, procedures, functions with metadata
-- ✅ **Transaction Manager** - Complex transactions with savepoints and retry
-- ✅ **Oracle Advanced Queuing** - Enterprise messaging system
-- ✅ **Health Checks** - Advanced monitoring and diagnostics
+### Available Nodes
 
-### 📊 **Operation Types**
+#### Oracle Database (Basic)
+Simple SQL execution with parameterized queries and IN-list parsing.
 
-1. **SQL Query** - Queries with bind variables and SQL injection protection
-2. **PL/SQL Block** - Execution with automatic OUT parameter detection
-3. **Stored Procedure** - Calls with automatic metadata
-4. **Function** - Execution with configurable return types
-5. **Bulk Operations** - Mass processing with error control
-6. **Transaction Block** - Distributed transactions with savepoints
-7. **Oracle AQ** - Advanced messaging with queues and topics
+- SQL queries with named bind variables (`:param`)
+- Support for String, Number data types
+- Parse values for `IN` statements (comma-separated → individual binds)
+
+#### Oracle Database Advanced
+Enterprise operations with connection pool selection.
+
+| Operation | Description |
+|-----------|-------------|
+| **SQL Query** | Parameterized queries with String, Number, Date, CLOB, OUT types |
+| **PL/SQL Block** | Anonymous blocks with automatic OUT parameter detection |
+| **Stored Procedure** | `BEGIN proc(:p1, :p2); END;` via PL/SQL executor |
+| **Function** | `BEGIN :result := func(:p1); END;` via PL/SQL executor |
+| **Bulk Operations** | Mass Insert with configurable batch size and error control |
+| **Transaction Block** | Multi-statement transactions with per-operation savepoints |
+| **Oracle AQ** | Advanced Queuing — queue info and monitoring |
+
+Connection pool presets: **Standard**, **High Volume**, **OLTP**, **Analytics**, or **Single Connection**.
+
+#### Oracle Vector Store
+Vector store management for **Oracle 23ai** with native VECTOR type support.
+
+| Operation | Description |
+|-----------|-------------|
+| Setup Collection | Create table + HNSW vector index with configurable dimension |
+| Add Document | Insert document with embedding (float32 array) |
+| Search Similarity | Nearest-neighbor search (Cosine, Euclidean, Dot Product) |
+| Get / Update / Delete Document | Document CRUD by ID |
+| List Collections | List vector store tables |
+
+#### Oracle Chat Memory
+Session-based chat history stored in Oracle.
+
+| Operation | Description |
+|-----------|-------------|
+| Setup Table | Create session table + session index |
+| Add Message | Store user / assistant / system message |
+| Get Messages | Retrieve full session history ordered by timestamp |
+| Clear Memory | Delete all messages for a session |
+| Get Summary | Message count by type, first/last timestamps |
 
 ---
 
-## 🚀 Installation
+## Installation
 
-### Basic Installation (Thin Mode)
+### Thin Mode (no Oracle Client)
 
 ```bash
 npm install @jonales/n8n-nodes-oracle-database
 ```
 
-> 💡 **No additional configuration required.** Works immediately in any environment.
+Works immediately in any Node.js environment — containers, cloud, local.
 
-### Advanced Installation (Thick Mode)
+### Thick Mode (Oracle Instant Client required)
 
-For **maximum performance** [in critical loads, install the Oracle Client manually:
+Install Oracle Instant Client first, then install the package.
 
-#### **Linux/macOS:**
+**Linux / macOS:**
 
 ```bash
-# 1. Download Oracle Instant Client
+# Download and extract Oracle Instant Client
 wget https://download.oracle.com/otn_software/linux/instantclient/2340000/instantclient-basic-linux.x64-23.4.0.24.05.zip
-
-# 2. Extract and configure
 unzip instantclient-basic-linux.x64-23.4.0.24.05.zip -d /opt/oracle/
 export LD_LIBRARY_PATH=/opt/oracle/instantclient_23_4:$LD_LIBRARY_PATH
 
-# 3. Install n8n package
 npm install @jonales/n8n-nodes-oracle-database
 ```
 
-#### **Windows:**
+**Windows:**
 
-```bash
-# 1. Download and extract Oracle Instant Client to C:\oracle\instantclient_23_4
-
-# 2. Add to system PATH
+```powershell
+# Extract Oracle Instant Client to C:\oracle\instantclient_23_4
+# Add to system PATH:
 $env:PATH += ";C:\oracle\instantclient_23_4"
 
-# 3. Install package
 npm install @jonales/n8n-nodes-oracle-database
 ```
 
-#### **Docker:**
+**Docker (thick mode):**
 
 ```dockerfile
 FROM n8nio/n8n:latest
 
-# Install Oracle Instant Client
 RUN apt-get update && apt-get install -y wget unzip libaio1
 RUN wget https://download.oracle.com/otn_software/linux/instantclient/2340000/instantclient-basic-linux.x64-23.4.0.24.05.zip
 RUN unzip instantclient-basic-linux.x64-23.4.0.24.05.zip -d /opt/oracle/
 ENV LD_LIBRARY_PATH=/opt/oracle/instantclient_23_4
 
-# Install Oracle node
 RUN npm install @jonales/n8n-nodes-oracle-database
 ```
 
 ---
 
-## ⚙️ n8n Configuration
+## Credentials Configuration
 
-### 1. **Oracle Credentials**
+| Field | Description | Example |
+|-------|-------------|---------|
+| **User** | Oracle database user | `hr` or `system` |
+| **Password** | User password | `your_password` |
+| **Connection String** | Host:port/service or TNS alias | `localhost:1521/XEPDB1` |
+| **Connection Mode** | Thin (default) or Thick | `Thin Mode` |
+| **Oracle Client Directory** | Thick mode only — path to Instant Client | `/opt/oracle/instantclient_23_4` |
+| **Oracle Config Directory** | Thick mode only — tnsnames.ora location | `/opt/oracle/network/admin` |
 
-|  Field                 |  Description              |  Example                         |
-| ---------------------- | ------------------------- | -------------------------------- |
-| **User**               | Oracle user               | `hr` or `system`                 |
-| **Password**           | User password             | `your_secure_password`           |
-| **Connection String**  | Connection string         | `localhost:1521/XEPDB1`          |
-| **Use Thin Mode**      | Connection mode           | `true` (default) or `false`      |
-| **Oracle Client Path** | Client path (thick mode)  | `/opt/oracle/instantclient_23_4` |
+**Connection string examples:**
 
-#### **Connection String Examples:**
-
-```bash
-# Local Oracle XE
+```
+# Oracle XE (local)
 localhost:1521/XEPDB1
 
 # Oracle Enterprise
 oracle-server.company.com:1521/PROD
 
-# Oracle Cloud Autonomous
-adb.region.oraclecloud.com:1522/service_high.adb.oraclecloud.com
+# Oracle Autonomous (OCI)
+adb.us-ashburn-1.oraclecloud.com:1522/service_high.adb.oraclecloud.com
 
 # Oracle RDS (AWS)
-oracle-rds.cluster-xyz.region.rds.amazonaws.com:1521/ORCL
+mydb.cluster-xyz.us-east-1.rds.amazonaws.com:1521/ORCL
+
+# TNS alias (thick mode with tnsnames.ora)
+MY_TNS_ALIAS
 ```
 
-### 2. **Automatic vs Manual Configuration**
+---
 
-#### **Automatic Mode (Recommended):**
+## Thin vs Thick Mode — When to Use Each
 
-- Leave **"Use Thin Mode"** as `true`
-- System automatically detects if Oracle Client is available
-- Uses thick mode if detected, otherwise uses thin mode
+### Thin Mode
 
-#### **Manual Mode:**
+- No installation required
+- Works in Docker, Kubernetes, cloud functions
+- Supports most Oracle features (SQL, PL/SQL, bind variables, LOBs)
+- Default for all four nodes
 
-- **Thin Mode:** `Use Thin Mode = true` - Zero configuration
-- **Thick Mode:** `Use Thin Mode = false` + configure Oracle Client path
+### Thick Mode
+
+Use Thick when you need:
+- Oracle Wallets (mTLS / Autonomous Database without connection string)
+- Kerberos or LDAP authentication
+- Oracle Net Services (advanced network config)
+- Some older Oracle-specific features (pre-12c compatibility)
+
+> **Important:** Oracle initializes the driver mode **once per process**. If the first connection in the n8n process is Thin, all subsequent connections in that process will also be Thin. To guarantee Thick mode, set all credentials to Thick Mode, or restart n8n after changing the mode.
 
 ---
 
-## 🔧 Key Changes in Version 1.0.2
+## Troubleshooting
 
-### ✅ **What Was Removed:**
-- Automatic Oracle Client installation scripts
-- `postinstall` hook that executed setup scripts
-- Script folder and installation files
-- Dependencies on system-level modifications
+### Thin mode — connection refused
+- Check connection string format: `host:1521/service_name`
+- Verify firewall is not blocking port 1521 (or your Oracle port)
+- Test network: `telnet hostname 1521`
 
-### ✅ **What Remains:**
-- **All Oracle nodes** (OracleDatabase, OracleDatabaseAdvanced, OracleVectorStore, ChatMemory)
-- **THIN Mode** (recommended) - works without Oracle Client
-- **THICK Mode** - works if Oracle Client is manually installed
-- **Smart auto-detection** in TypeScript code
-- **Connection pooling** and advanced features
-- **Bulk operations** and PL/SQL executor
-- **Vector Store** for Oracle 23ai
-- **Transaction management**
+### Thick mode — DPI-1047 (Oracle Client not found)
+- Verify Oracle Instant Client is installed
+- Set `LD_LIBRARY_PATH` (Linux/macOS) or add to `PATH` (Windows) pointing to the client directory
+- Or set the **Oracle Client Directory** field in credentials
+- Oracle Client version must be compatible with your database version
+
+### Thick mode — DPI-1072 (already initialized)
+- This is informational — the driver was already initialized in a previous call. No action needed.
 
 ---
 
-## 🎯 Usage in Nodes
-
-### Credentials Configuration
-- **Connection Mode:** Thin Mode (default) or Thick Mode
-- **Connection String:** `hostname:port/service_name` or TNS
-- **User/Password:** Database credentials
-
-### Available Nodes
-1. **Oracle Database** - Basic SQL operations
-2. **Oracle Database Advanced** - PL/SQL, bulk ops, transactions
-3. **Oracle Vector Store** - Vector search with Oracle 23ai
-4. **Chat Memory** - Memory management for chatbots
-
-## 🔧 Troubleshooting
-
-### Thin mode doesn't connect
-- Check connection string: `hostname:1521/XEPDB1`
-- Check firewall/network
-- Test connectivity: `telnet hostname 1521`
-
-### Thick mode doesn't work
-- Check if Oracle Client is installed
-- Configure environment variables (LD_LIBRARY_PATH/PATH)
-- The node will try fallback to THIN automatically
-
----
-
-## 🏗️ Development
+## Development
 
 ```bash
-# Install dependencies
-npm install
-
-# Build
-npm run build
-
-# Development with watch
-npm run dev
-
-# Lint
-npm run lint
-
-# Complete validation
-npm run validate
+npm install          # Install dependencies
+npm run build        # Compile TypeScript
+npm run dev          # Watch mode
+npm run lint         # ESLint check
+npm run lint:fix     # ESLint auto-fix
 ```
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
-2. Create branch for feature
-3. Implement changes
-4. Execute `npm run validate`
-5. Create Pull Request
+2. Create a feature branch
+3. Implement changes and run `npm run build`
+4. Open a Pull Request
 
 ---
 
-### **Support the Project:**
+### Support the Project
 
 <div align="center">
 
-### PIX:
+### PIX
 
 <img src="image/README/qrcode-pix-jonatas.mei@outlook.com.png" alt="QR Code PIX" width="150" />
 
 **PIX Key:** jonatas.mei@outlook.com
 
-### Cryptocurrency Donation
+### Cryptocurrency
 
 <table style="width:100%; border:none;">
   <tr style="border:none;">
     <td style="text-align:center; padding:10px; border:none;">
       <h4>Bitcoin (BTC)</h4>
       <img src="image/README/btc.jpeg" alt="QR Code BTC" width="150" />
-      <br>
-      <code>bc1qdq9rj7565c4fvr7t3xut6z0tjd65p4mudrc0ll</code>
-      <br>
+      <br><code>bc1qdq9rj7565c4fvr7t3xut6z0tjd65p4mudrc0ll</code><br>
       <a href="https://link.trustwallet.com/send?asset=c0&address=bc1qdq9rj7565c4fvr7t3xut6z0tjd65p4mudrc0ll">Pay with Trust Wallet</a>
     </td>
     <td style="text-align:center; padding:10px; border:none;">
       <h4>Ethereum (ETH)</h4>
       <img src="image/README/eth.jpeg" alt="QR Code ETH" width="150" />
-      <br>
-      <code>0xA35A984401Ae9c81ca2d742977E603421df45419</code>
-      <br>
+      <br><code>0xA35A984401Ae9c81ca2d742977E603421df45419</code><br>
       <a href="https://link.trustwallet.com/send?address=0xA35A984401Ae9c81ca2d742977E603421df45419&asset=c60">Pay with Trust Wallet</a>
     </td>
   </tr>
@@ -328,17 +294,13 @@ npm run validate
     <td style="text-align:center; padding:10px; border:none;">
       <h4>Binance (BNB)</h4>
       <img src="image/README/bnb.jpeg" alt="QR Code BNB" width="150" />
-      <br>
-      <code>0xA35A984401Ae9c81ca2d742977E603421df45419</code>
-      <br>
+      <br><code>0xA35A984401Ae9c81ca2d742977E603421df45419</code><br>
       <a href="https://link.trustwallet.com/send?address=0xA35A984401Ae9c81ca2d742977E603421df45419&asset=c20000714">Pay with Trust Wallet</a>
     </td>
     <td style="text-align:center; padding:10px; border:none;">
       <h4>Polygon (POL)</h4>
       <img src="image/README/pol.jpeg" alt="QR Code POL" width="150" />
-      <br>
-      <code>0xA35A984401Ae9c81ca2d742977E603421df45419</code>
-      <br>
+      <br><code>0xA35A984401Ae9c81ca2d742977E603421df45419</code><br>
       <a href="https://link.trustwallet.com/send?asset=c966&address=0xA35A984401Ae9c81ca2d742977E603421df45419">Pay with Trust Wallet</a>
     </td>
   </tr>
@@ -348,24 +310,24 @@ npm run validate
 
 ---
 
-## 📄 License
+## License
 
-This project is under **MIT License** - see [LICENSE.md](LICENSE.md) for details.
+MIT — see [LICENSE.md](LICENSE.md)
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 **Jônatas Meireles Sousa Vieira**  
-📧 [jonatas.mei@outlook.com](mailto:jonatas.mei@outlook.com)  
-🔗 [GitHub @jonales](https://github.com/jonales)  
-💼 [LinkedIn](https://www.linkedin.com/in/jonatasmeireles/)
+Email: [jonatas.mei@outlook.com](mailto:jonatas.mei@outlook.com)  
+GitHub: [@jonales](https://github.com/jonales)  
+LinkedIn: [jonatasmeireles](https://www.linkedin.com/in/jonatasmeireles/)
 
 ---
 
 <div align="center">
 
-**⭐ If this project was useful, consider giving it a star! ⭐**
+**If this project was useful, consider giving it a star!**
 
 [![GitHub stars](https://img.shields.io/github/stars/jonales/n8n-nodes-oracle-database.svg?style=social&label=Star)](https://github.com/jonales/n8n-nodes-oracle-database)
 [![GitHub forks](https://img.shields.io/github/forks/jonales/n8n-nodes-oracle-database.svg?style=social&label=Fork)](https://github.com/jonales/n8n-nodes-oracle-database/fork)
@@ -376,295 +338,264 @@ This project is under **MIT License** - see [LICENSE.md](LICENSE.md) for details
 
 </details>
 
-<details close>
+<details open>
 <summary>🇧🇷 Português</summary>
 
 ---
 
-# 📖 Documentação em Português
+# Node Oracle Database para n8n
 
-Node avançado **Oracle Database** para [n8n](https://n8n.io/) com **recursos empresariais para cargas pesadas** e suporte completo ao **Oracle 19c+**.
+Node avançado **Oracle Database** para [n8n](https://n8n.io/) com recursos empresariais para cargas pesadas e suporte completo ao **Oracle 19c+** e **Oracle 23ai**.
 
-> **🚀 Versão 1.0.2 - Arquitetura Limpa**
->
-> - **Thin Mode** (padrão) - Zero configuração, funciona em qualquer ambiente
-> - **Thick Mode** - Performance máxima com Oracle Client para cargas críticas
-> - **Detecção automática** do modo ideal baseado no ambiente
-> - **Instalação simplificada** sem scripts complexos
+> **Versão 1.0.9** — Build oficial n8n (`@n8n/node-cli`), suporte completo thin/thick mode por credencial.
 
 ---
 
-## 📋 Sobre Este Projeto
+## Sobre
 
-Solução empresarial completa para **Oracle Database** no ecossistema **n8n**, desenvolvida com arquitetura moderna e suporte a ambos os modos de conexão (thin/thick) do `node-oracledb 6.x`.
+Solução empresarial completa para **Oracle Database** no ecossistema **n8n**, construída com `node-oracledb 6.x` e com suporte a ambos os modos de conexão — **Thin** (JavaScript puro, sem Oracle Client) e **Thick** (Oracle Client libraries, conjunto completo de funcionalidades).
 
 **Desenvolvido por:** [Jônatas Meireles Sousa Vieira](https://github.com/jonales)  
 **Baseado em:** [n8n-nodes-oracle-database](https://github.com/matheuspeluchi/n8n-nodes-oracle-database) por Matheus Peluchi
 
 ---
 
-## 📁 Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
 n8n-nodes-oracle-database/
-│
-├── 📂 credentials/
+├── credentials/
 │   └── Oracle.credentials.ts           # Credenciais Oracle (thin/thick)
-│
-├── 📂 nodes/
-│   └── 📂 Oracle/
-│       ├── OracleDatabase.node.ts          # Node básico com parametrização
-│       ├── OracleDatabaseAdvanced.node.ts  # Node avançado empresarial
-│       ├── OracleVectorStore.node.ts       # Node para criação de vector store
-│       ├── ChatMemory.node.ts              # Node para armazenamento de histórico de chat
-│       ├── oracle.svg                      # Símbolo da Oracle para os nodes
-│       │
-│       └── 📂 core/
-│            ├── aqOperations.ts         # Oracle Advanced Queuing
-│            ├── bulkOperations.ts       # Operações em massa
-│            ├── connectionPool.ts       # Pool de conexões
-│            ├── connection.ts           # Gerenciador de conexão (thin/thick)
-│            ├── plsqlExecutor.ts        # Executor PL/SQL
-│            ├── transactionManager.ts   # Gerenciador transações
-│            │
-│            ├── 📂 interfaces/
-│            │   └── database.interface.ts   # Interfaces para conexões
-│            │
-│            ├── 📂 types/
-│            │   └── oracle.credentials.type.ts # Tipos para credenciais
-│            │
-│            └── 📂 utils/
-│                └── error-handler.ts # Utilitários para tratamento de erros
-│            
-├── 📂 dist/                            # Build compilado (auto-gerado)
-├── 📂 image/README/                    # Imagens do README
-├── 📂 node_modules/                    # Dependências (auto-gerado)
-│
-├── 📄 package.json                     # Configuração do projeto
-├── 📄 tsconfig.json                    # Configuração TypeScript
-├── 📄 eslint.config.js                 # Configuração ESLint
-├── 📄 gulpfile.js                      # Tasks de build
-├── 📄 LICENSE.md                       # Licença MIT
-├── 📄 README.md                        # Esta documentação
-├── 📄 prettier.config.cjs              # Configuração Prettier  
-└── 📄 index.js                         # Ponto de entrada
+├── nodes/
+│   └── Oracle/
+│       ├── OracleDatabase.node.ts          # Node básico — SQL com bind variables
+│       ├── OracleDatabaseAdvanced.node.ts  # Node avançado — PL/SQL, bulk, AQ
+│       ├── OracleVectorStore.node.ts       # Vector store — Oracle 23ai
+│       ├── ChatMemory.node.ts              # Histórico de chat — sessões
+│       ├── oracle.svg
+│       └── core/
+│           ├── connection.ts           # Gerenciador de conexão (thin/thick)
+│           ├── connectionPool.ts       # Pool de conexões
+│           ├── bulkOperations.ts       # Bulk Insert/Update/Delete/Upsert
+│           ├── plsqlExecutor.ts        # PL/SQL: blocos, procedures, functions
+│           ├── transactionManager.ts   # Transações com savepoints
+│           ├── aqOperations.ts         # Oracle Advanced Queuing
+│           ├── interfaces/
+│           │   └── database.interface.ts
+│           ├── types/
+│           │   └── oracle.credentials.type.ts
+│           └── utils/
+│               └── error-handler.ts
+└── dist/                               # Build compilado (auto-gerado)
 ```
 
 ---
 
-## ⭐ Recursos Revolucionários
+## Funcionalidades
 
-### 🔧 **Arquitetura de Instalação Limpa**
+### Modos de Conexão
 
-- ✅ **Thin Mode** (padrão) - Zero configuração, cliente JavaScript puro
-- ✅ **Thick Mode** - Performance máxima com Oracle Client libraries
-- ✅ **Sem scripts de instalação** - Compatível com padrões da comunidade n8n
-- ✅ **Configuração flexível** - Controle total sobre o modo de conexão
+| Modo | Oracle Client | Indicado para |
+|------|---------------|---------------|
+| **Thin** (padrão) | Não necessário — driver JavaScript puro | Containers, cloud, setup rápido |
+| **Thick** | Necessário — Oracle Instant Client | Wallets, Kerberos, LDAP, máxima performance |
 
-### 🏗️ **Operações Empresariais**
+> O modo é configurado **por credencial** — cada credencial pode usar um modo diferente de forma independente.
 
-- ✅ **Connection Pooling** inteligente (Standard, High Volume, OLTP, Analytics)
-- ✅ **Bulk Operations** - Insert/Update/Delete/Upsert em massa otimizadas
-- ✅ **PL/SQL Executor** - Blocos anônimos, procedures, functions com metadados
-- ✅ **Transaction Manager** - Transações complexas com savepoints e retry
-- ✅ **Oracle Advanced Queuing** - Sistema de mensageria empresarial
-- ✅ **Health Checks** - Monitoramento e diagnóstico avançado
+### Nodes Disponíveis
 
-### 📊 **Tipos de Operação**
+#### Oracle Database (Básico)
+Execução SQL com queries parametrizadas e suporte a listas IN.
 
-1. **SQL Query** - Consultas com bind variables e proteção SQL injection
-2. **PL/SQL Block** - Execução com detecção automática de parâmetros OUT
-3. **Stored Procedure** - Chamadas com metadados automáticos
-4. **Function** - Execução com tipos de retorno configuráveis
-5. **Bulk Operations** - Processamento em massa com controle de erro
-6. **Transaction Block** - Transações distribuídas com savepoints
-7. **Oracle AQ** - Mensageria avançada com filas e tópicos
+- Queries com bind variables nomeadas (`:param`)
+- Tipos: String e Number
+- Parse de valores para `IN` (lista separada por vírgula → binds individuais)
+
+#### Oracle Database Advanced
+Operações empresariais com seleção de pool de conexão.
+
+| Operação | Descrição |
+|----------|-----------|
+| **SQL Query** | Queries parametrizadas com tipos String, Number, Date, CLOB, OUT |
+| **PL/SQL Block** | Blocos anônimos com detecção automática de parâmetros OUT |
+| **Stored Procedure** | `BEGIN proc(:p1, :p2); END;` via executor PL/SQL |
+| **Function** | `BEGIN :result := func(:p1); END;` via executor PL/SQL |
+| **Bulk Operations** | Insert em massa com batch size configurável e controle de erros |
+| **Transaction Block** | Transações multi-statement com savepoint por operação |
+| **Oracle AQ** | Advanced Queuing — informações de fila e monitoramento |
+
+Pools disponíveis: **Standard**, **High Volume**, **OLTP**, **Analytics** ou **Single Connection**.
+
+#### Oracle Vector Store
+Gerenciamento de vector store para **Oracle 23ai** com suporte nativo ao tipo VECTOR.
+
+| Operação | Descrição |
+|----------|-----------|
+| Setup Collection | Cria tabela + índice vetorial HNSW com dimensão configurável |
+| Add Document | Insere documento com embedding (array float32) |
+| Search Similarity | Busca por vizinhança (Cosine, Euclidean, Dot Product) |
+| Get / Update / Delete Document | CRUD de documento por ID |
+| List Collections | Lista tabelas de vector store |
+
+#### Oracle Chat Memory
+Histórico de chat por sessão armazenado no Oracle.
+
+| Operação | Descrição |
+|----------|-----------|
+| Setup Table | Cria tabela de sessão + índice |
+| Add Message | Salva mensagem user / assistant / system |
+| Get Messages | Recupera histórico completo ordenado por timestamp |
+| Clear Memory | Remove todas as mensagens de uma sessão |
+| Get Summary | Contagem por tipo, primeiro e último timestamp |
 
 ---
 
-## 🚀 Instalação
+## Instalação
 
-### Instalação Básica (Thin Mode)
+### Thin Mode (sem Oracle Client)
 
 ```bash
 npm install @jonales/n8n-nodes-oracle-database
 ```
 
-> 💡 **Não requer configuração adicional.** Funciona imediatamente em qualquer ambiente.
+Funciona imediatamente em qualquer ambiente Node.js — containers, cloud, local.
 
-### Instalação Avançada (Thick Mode)
+### Thick Mode (Oracle Instant Client obrigatório)
 
-Para **performance máxima** em cargas críticas, instale o Oracle Client manualmente:
+Instale o Oracle Instant Client primeiro, depois o pacote.
 
-#### **Linux/macOS:**
+**Linux / macOS:**
 
 ```bash
-# 1. Download Oracle Instant Client
 wget https://download.oracle.com/otn_software/linux/instantclient/2340000/instantclient-basic-linux.x64-23.4.0.24.05.zip
-
-# 2. Extrair e configurar
 unzip instantclient-basic-linux.x64-23.4.0.24.05.zip -d /opt/oracle/
 export LD_LIBRARY_PATH=/opt/oracle/instantclient_23_4:$LD_LIBRARY_PATH
 
-# 3. Instalar o pacote n8n
 npm install @jonales/n8n-nodes-oracle-database
 ```
 
-#### **Windows:**
+**Windows:**
 
-```bash
-# 1. Download e extrair Oracle Instant Client para C:\oracle\instantclient_23_4
-
-# 2. Adicionar ao PATH do sistema
+```powershell
+# Extraia o Oracle Instant Client em C:\oracle\instantclient_23_4
+# Adicione ao PATH do sistema:
 $env:PATH += ";C:\oracle\instantclient_23_4"
 
-# 3. Instalar o pacote
 npm install @jonales/n8n-nodes-oracle-database
 ```
 
-#### **Docker:**
+**Docker (thick mode):**
 
 ```dockerfile
 FROM n8nio/n8n:latest
 
-# Instalar Oracle Instant Client
 RUN apt-get update && apt-get install -y wget unzip libaio1
 RUN wget https://download.oracle.com/otn_software/linux/instantclient/2340000/instantclient-basic-linux.x64-23.4.0.24.05.zip
 RUN unzip instantclient-basic-linux.x64-23.4.0.24.05.zip -d /opt/oracle/
 ENV LD_LIBRARY_PATH=/opt/oracle/instantclient_23_4
 
-# Instalar node Oracle
 RUN npm install @jonales/n8n-nodes-oracle-database
 ```
 
 ---
 
-## ⚙️ Configuração no n8n
+## Configuração de Credenciais
 
-### 1. **Credenciais Oracle**
+| Campo | Descrição | Exemplo |
+|-------|-----------|---------|
+| **User** | Usuário Oracle | `hr` ou `system` |
+| **Password** | Senha do usuário | `sua_senha` |
+| **Connection String** | Host:porta/serviço ou TNS alias | `localhost:1521/XEPDB1` |
+| **Connection Mode** | Thin (padrão) ou Thick | `Thin Mode` |
+| **Oracle Client Directory** | Apenas thick — caminho do Instant Client | `/opt/oracle/instantclient_23_4` |
+| **Oracle Config Directory** | Apenas thick — local do tnsnames.ora | `/opt/oracle/network/admin` |
 
-| Campo                  | Descrição                 | Exemplo                          |
-| ---------------------- | ------------------------- | -------------------------------- |
-| **User**               | Usuário Oracle            | `hr` ou `system`                 |
-| **Password**           | Senha do usuário          | `sua_senha_segura`               |
-| **Connection String**  | String de conexão         | `localhost:1521/XEPDB1`          |
-| **Use Thin Mode**      | Modo de conexão           | `true` (padrão) ou `false`       |
-| **Oracle Client Path** | Caminho do client (thick) | `/opt/oracle/instantclient_23_4` |
+**Exemplos de Connection String:**
 
-#### **Exemplos de Connection String:**
-
-```bash
-# Oracle XE local
+```
+# Oracle XE (local)
 localhost:1521/XEPDB1
 
 # Oracle Enterprise
 oracle-server.empresa.com:1521/PROD
 
-# Oracle Cloud Autonomous
-adb.region.oraclecloud.com:1522/service_high.adb.oraclecloud.com
+# Oracle Autonomous (OCI)
+adb.us-ashburn-1.oraclecloud.com:1522/service_high.adb.oraclecloud.com
 
 # Oracle RDS (AWS)
-oracle-rds.cluster-xyz.region.rds.amazonaws.com:1521/ORCL
+mydb.cluster-xyz.us-east-1.rds.amazonaws.com:1521/ORCL
+
+# TNS alias (thick mode com tnsnames.ora)
+MEU_TNS_ALIAS
 ```
 
-### 2. **Configuração Automática vs Manual**
+---
 
-#### **Modo Automático (Recomendado):**
+## Thin vs Thick Mode — Quando Usar Cada Um
 
-- Deixe **"Use Thin Mode"** como `true`
-- O sistema detecta automaticamente se Oracle Client está disponível
-- Usa thick mode se detectado, senão usa thin mode
+### Thin Mode
 
-#### **Modo Manual:**
+- Nenhuma instalação adicional
+- Funciona em Docker, Kubernetes, funções cloud
+- Suporta a maioria dos recursos Oracle (SQL, PL/SQL, bind variables, LOBs)
+- Padrão em todos os quatro nodes
 
-- **Thin Mode:** `Use Thin Mode = true` - Zero configuração
-- **Thick Mode:** `Use Thin Mode = false` + configurar caminho do Oracle Client
+### Thick Mode
+
+Use Thick quando precisar de:
+- Oracle Wallets (mTLS / Autonomous Database sem connection string completa)
+- Autenticação Kerberos ou LDAP
+- Oracle Net Services (configuração avançada de rede)
+- Compatibilidade com recursos legados Oracle (pré-12c)
+
+> **Importante:** O oracledb inicializa o modo do driver **uma vez por processo**. Se a primeira conexão no processo do n8n for Thin, todas as conexões subsequentes naquele processo também serão Thin. Para garantir o Thick mode, configure todas as credenciais como Thick Mode — ou reinicie o n8n após alterar o modo.
 
 ---
 
-## 🔧 Principais Mudanças na Versão 1.0.2
+## Troubleshooting
 
-### ✅ **O que foi Removido:**
-- Scripts de instalação automática do Oracle Client
-- Hook `postinstall` que executava scripts de setup
-- Pasta script e arquivos de instalação
-- Dependências de modificações no sistema operacional
+### Thin mode — conexão recusada
+- Verifique o formato da connection string: `host:1521/service_name`
+- Verifique se o firewall não está bloqueando a porta 1521 (ou a porta do seu Oracle)
+- Teste a rede: `telnet hostname 1521`
 
-### ✅ **O que Permanece:**
-- **Todos os nodes Oracle** (OracleDatabase, OracleDatabaseAdvanced, OracleVectorStore, ChatMemory)
-- **Modo THIN** (recomendado) - funciona sem Oracle Client
-- **Modo THICK** - funciona se Oracle Client estiver instalado manualmente
-- **Auto-detecção inteligente** no código TypeScript
-- **Connection pooling** e funcionalidades avançadas
-- **Bulk operations** e PL/SQL executor
-- **Vector Store** para Oracle 23ai
-- **Transaction management**
+### Thick mode — DPI-1047 (Oracle Client não encontrado)
+- Verifique se o Oracle Instant Client está instalado
+- Configure `LD_LIBRARY_PATH` (Linux/macOS) ou adicione ao `PATH` (Windows) apontando para o diretório do client
+- Ou preencha o campo **Oracle Client Directory** nas credenciais
+- A versão do Oracle Client deve ser compatível com a versão do seu banco
+
+### Thick mode — DPI-1072 (já inicializado)
+- Informativo — o driver já foi inicializado em uma chamada anterior. Nenhuma ação necessária.
 
 ---
 
-## 🎯 Uso nos Nodes
-
-### Configuração de Credenciais
-- **Connection Mode:** Thin Mode (padrão) ou Thick Mode
-- **Connection String:** `hostname:port/service_name` ou TNS
-- **User/Password:** Credenciais do banco
-
-### Nodes Disponíveis
-1. **Oracle Database** - Operações SQL básicas
-2. **Oracle Database Advanced** - PL/SQL, bulk ops, transações
-3. **Oracle Vector Store** - Vector search com Oracle 23ai
-4. **Chat Memory** - Gerenciamento de memória para chatbots
-
-## 🔧 Troubleshooting
-
-### Modo THIN não conecta
-- Verificar string de conexão: `hostname:1521/XEPDB1`
-- Verificar firewall/rede
-- Testar conectividade: `telnet hostname 1521`
-
-### Modo THICK não funciona
-- Verificar se Oracle Client está instalado
-- Configurar variáveis de ambiente (LD_LIBRARY_PATH/PATH)
-- O node tentará fallback para THIN automaticamente
-
----
-
-## 🏗️ Desenvolvimento
+## Desenvolvimento
 
 ```bash
-# Instalar dependências
-npm install
-
-# Build
-npm run build
-
-# Desenvolvimento com watch
-npm run dev
-
-# Lint
-npm run lint
-
-# Validação completa
-npm run validate
+npm install          # Instalar dependências
+npm run build        # Compilar TypeScript
+npm run dev          # Modo watch
+npm run lint         # Verificar ESLint
+npm run lint:fix     # Corrigir ESLint automaticamente
 ```
 
 ---
 
-## 🤝 Contribuição
+## Contribuição
 
 1. Fork o repositório
-2. Criar branch para feature
-3. Implementar mudanças
-4. Executar `npm run validate`
-5. Criar Pull Request
+2. Crie uma branch para a feature
+3. Implemente as mudanças e rode `npm run build`
+4. Abra um Pull Request
 
 ---
 
-### **Apoie o Projeto:**
+### Apoie o Projeto
 
 <div align="center">
 
-### PIX:
+### PIX
 
 <img src="image/README/qrcode-pix-jonatas.mei@outlook.com.png" alt="QR Code PIX" width="150" />
 
@@ -677,17 +608,13 @@ npm run validate
     <td style="text-align:center; padding:10px; border:none;">
       <h4>Bitcoin (BTC)</h4>
       <img src="image/README/btc.jpeg" alt="QR Code BTC" width="150" />
-      <br>
-      <code>bc1qdq9rj7565c4fvr7t3xut6z0tjd65p4mudrc0ll</code>
-      <br>
+      <br><code>bc1qdq9rj7565c4fvr7t3xut6z0tjd65p4mudrc0ll</code><br>
       <a href="https://link.trustwallet.com/send?asset=c0&address=bc1qdq9rj7565c4fvr7t3xut6z0tjd65p4mudrc0ll">Pagar com Trust Wallet</a>
     </td>
     <td style="text-align:center; padding:10px; border:none;">
       <h4>Ethereum (ETH)</h4>
       <img src="image/README/eth.jpeg" alt="QR Code ETH" width="150" />
-      <br>
-      <code>0xA35A984401Ae9c81ca2d742977E603421df45419</code>
-      <br>
+      <br><code>0xA35A984401Ae9c81ca2d742977E603421df45419</code><br>
       <a href="https://link.trustwallet.com/send?address=0xA35A984401Ae9c81ca2d742977E603421df45419&asset=c60">Pagar com Trust Wallet</a>
     </td>
   </tr>
@@ -695,17 +622,13 @@ npm run validate
     <td style="text-align:center; padding:10px; border:none;">
       <h4>Binance (BNB)</h4>
       <img src="image/README/bnb.jpeg" alt="QR Code BNB" width="150" />
-      <br>
-      <code>0xA35A984401Ae9c81ca2d742977E603421df45419</code>
-      <br>
+      <br><code>0xA35A984401Ae9c81ca2d742977E603421df45419</code><br>
       <a href="https://link.trustwallet.com/send?address=0xA35A984401Ae9c81ca2d742977E603421df45419&asset=c20000714">Pagar com Trust Wallet</a>
     </td>
     <td style="text-align:center; padding:10px; border:none;">
       <h4>Polygon (POL)</h4>
       <img src="image/README/pol.jpeg" alt="QR Code POL" width="150" />
-      <br>
-      <code>0xA35A984401Ae9c81ca2d742977E603421df45419</code>
-      <br>
+      <br><code>0xA35A984401Ae9c81ca2d742977E603421df45419</code><br>
       <a href="https://link.trustwallet.com/send?asset=c966&address=0xA35A984401Ae9c81ca2d742977E603421df45419">Pagar com Trust Wallet</a>
     </td>
   </tr>
@@ -715,59 +638,24 @@ npm run validate
 
 ---
 
-## 📋 Arquivos Principais
+## Licença
 
-```
-src/
-├── nodes/Oracle/           # Nodes n8n
-│   ├── OracleDatabase.node.ts
-│   ├── OracleDatabaseAdvanced.node.ts
-│   ├── OracleVectorStore.node.ts
-│   └── ChatMemory.node.ts
-├── credentials/            # Credenciais
-│   └── Oracle.credentials.ts
-└── core/                  # Funcionalidades centrais
-    ├── connection.ts      # Gerenciamento de conexão
-    ├── connectionPool.ts  # Pool de conexões
-    ├── bulkOperations.ts  # Operações em massa
-    ├── plsqlExecutor.ts   # Executor PL/SQL
-    └── transactionManager.ts
-```
+MIT — veja [LICENSE.md](LICENSE.md)
 
 ---
 
-## 📝 Changelog
-
-### v1.0.2
-- ✅ Removido scripts de instalação Oracle Client
-- ✅ Simplificada arquitetura de instalação
-- ✅ Melhor compatibilidade com n8n community nodes
-- ✅ Modo THIN como padrão
-- ✅ Auto-detecção mantida no código TypeScript
-
-### v1.0.1-rc.14
-- ✅ Scripts de instalação automática (removidos em 1.0.2)
-- ✅ Funcionalidades completas Oracle
-
----
-
-## 📄 Licença
-
-MIT License - veja LICENSE.md
-
----
-
-## 👨‍💻 Mantenedor
+## Autor
 
 **Jônatas Meireles Sousa Vieira**  
-**Email:** jonatas.mei@outlook.com  
-**GitHub:** https://github.com/jonales/n8n-nodes-oracle-database
+Email: [jonatas.mei@outlook.com](mailto:jonatas.mei@outlook.com)  
+GitHub: [@jonales](https://github.com/jonales)  
+LinkedIn: [jonatasmeireles](https://www.linkedin.com/in/jonatasmeireles/)
 
 ---
 
 <div align="center">
 
-**⭐ Se este projeto foi útil, considere dar uma estrela! ⭐**
+**Se este projeto foi útil, considere dar uma estrela!**
 
 [![GitHub stars](https://img.shields.io/github/stars/jonales/n8n-nodes-oracle-database.svg?style=social&label=Star)](https://github.com/jonales/n8n-nodes-oracle-database)
 [![GitHub forks](https://img.shields.io/github/forks/jonales/n8n-nodes-oracle-database.svg?style=social&label=Fork)](https://github.com/jonales/n8n-nodes-oracle-database/fork)

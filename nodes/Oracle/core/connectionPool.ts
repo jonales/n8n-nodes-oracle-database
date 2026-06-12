@@ -41,6 +41,7 @@ export interface PoolStatistics {
 
 export class OracleConnectionPool {
   private static pools: Map<string, PoolWrapper> = new Map<string, PoolWrapper>();
+  private static thickInitialized = false;
   private static defaultConfig: PoolConfig = {
     poolMin: 2,
     poolMax: 20,
@@ -57,10 +58,33 @@ export class OracleConnectionPool {
   /**
 	 * Obter ou criar pool de conexões
 	 */
+  private static initializeThickMode(credentials: OracleCredentials): void {
+    if (this.thickInitialized) return;
+    try {
+      oracledb.initOracleClient({
+        libDir: credentials.libDir,
+        configDir: credentials.configDir,
+        errorUrl: credentials.errorUrl,
+      });
+      this.thickInitialized = true;
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      if (msg.includes('DPI-1072')) {
+        this.thickInitialized = true;
+        return;
+      }
+      throw new Error(`Falha ao inicializar Oracle Client (thick mode): ${msg}`);
+    }
+  }
+
   static async getPool(
     credentials: OracleCredentials,
     config: Partial<PoolConfig> = {},
   ): Promise<Pool> {
+    if (credentials.thinMode === false) {
+      this.initializeThickMode(credentials);
+    }
+
     const poolKey = this.generatePoolKey(credentials);
 
     // Verificar se pool já existe e está válido

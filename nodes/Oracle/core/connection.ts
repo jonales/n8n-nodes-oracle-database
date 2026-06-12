@@ -135,11 +135,10 @@ export class OracleConnection implements DatabaseConnection {
       if (errorMessage.includes('DPI-1047')) {
         throw new Error(
           'Oracle Client libraries não encontradas.\n' +
-						'Verifique se:\n' +
+						'Verifique:\n' +
 						'1. Oracle Instant Client está instalado\n' +
-						'2. LD_LIBRARY_PATH está configurado corretamente\n' +
-						`3. Caminho das bibliotecas está correto: ${this.connectionConfig.libDir || 'padrão do sistema'}\n` +
-						'4. Execute: node script/setup-oracle.js\n' +
+						'2. LD_LIBRARY_PATH (Linux/macOS) ou PATH (Windows) inclui o Oracle Client\n' +
+						`3. Caminho configurado nas credenciais: ${this.connectionConfig.libDir || 'não definido'}\n` +
 						`Erro original: ${errorMessage}`,
         );
       }
@@ -152,10 +151,9 @@ export class OracleConnection implements DatabaseConnection {
         `Falha ao inicializar Oracle Client em modo THICK: ${errorMessage}\n` +
 					'Verifique:\n' +
 					'- Oracle Instant Client instalado\n' +
-					'- LD_LIBRARY_PATH configurado\n' +
+					'- LD_LIBRARY_PATH (Linux/macOS) ou PATH (Windows) configurado\n' +
 					'- Permissões de acesso às bibliotecas\n' +
-					'- Compatibilidade da versão do Oracle Client\n' +
-					'- Execute: node script/setup-oracle.js --force',
+					'- Compatibilidade da versão do Oracle Client',
       );
     }
   }
@@ -194,8 +192,7 @@ export class OracleConnection implements DatabaseConnection {
 						'- Oracle Client está funcionando corretamente\n' +
 						'- TNS names está configurado (se usando TNS)\n' +
 						'- Credenciais e string de conexão\n' +
-						'- Conectividade de rede com o banco Oracle\n' +
-						'- Execute: node script/test-connection.js',
+						'- Conectividade de rede com o banco Oracle',
         );
       } else {
         throw new Error(
@@ -292,14 +289,14 @@ export class OracleConnection implements DatabaseConnection {
       if (!ldLibraryPath && !dyldLibraryPath && !libDir) {
         errors.push('LD_LIBRARY_PATH não está definido');
         recommendations.push('Configure LD_LIBRARY_PATH apontando para o Oracle Instant Client');
-        recommendations.push('Ou execute: node script/setup-oracle.js');
+        recommendations.push('Configure o caminho do Oracle Client nas credenciais do node');
       }
     }
 
     if (process.platform === 'win32' && !path?.toLowerCase().includes('oracle') && !libDir) {
       errors.push('Oracle Client não encontrado no PATH');
       recommendations.push('Adicione o diretório do Oracle Client ao PATH do Windows');
-      recommendations.push('Ou execute: node script/setup-oracle.js');
+      recommendations.push('Configure o caminho do Oracle Client nas credenciais do node');
     }
 
     if (
