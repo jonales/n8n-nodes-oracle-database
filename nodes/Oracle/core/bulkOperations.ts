@@ -72,8 +72,8 @@ export class BulkOperations {
     const columns = Object.keys(data[0]);
     this.validateDataStructure(data, columns);
 
-    // Gerar SQL de inserção
-    const placeholders = columns.map(() => '?').join(',');
+    // Gerar SQL de inserção (Oracle usa :1, :2, ... para binds posicionais)
+    const placeholders = columns.map((_, i) => `:${i + 1}`).join(',');
     const sql = `INSERT INTO ${tableName} (${columns.join(',')}) VALUES (${placeholders})`;
 
     console.log(`Iniciando bulk insert de ${data.length} registros em ${tableName}`);
@@ -187,9 +187,9 @@ export class BulkOperations {
       throw new Error('Nenhuma coluna para atualizar encontrada');
     }
 
-    // Gerar SQL de atualização
-    const setClause = setColumns.map(col => `${col} = ?`).join(',');
-    const whereClause = whereColumns.map(col => `${col} = ?`).join(' AND ');
+    // Gerar SQL de atualização (Oracle usa :1, :2, ... para binds posicionais)
+    const setClause = setColumns.map((col, i) => `${col} = :${i + 1}`).join(',');
+    const whereClause = whereColumns.map((col, i) => `${col} = :${setColumns.length + i + 1}`).join(' AND ');
     const sql = `UPDATE ${tableName} SET ${setClause} WHERE ${whereClause}`;
 
     console.log(`Iniciando bulk update de ${data.length} registros em ${tableName}`);
@@ -295,8 +295,8 @@ export class BulkOperations {
       throw new Error('Dados para exclusão não podem estar vazios');
     }
 
-    // Gerar SQL de exclusão
-    const whereClause = whereColumns.map(col => `${col} = ?`).join(' AND ');
+    // Gerar SQL de exclusão (Oracle usa :1, :2, ... para binds posicionais)
+    const whereClause = whereColumns.map((col, i) => `${col} = :${i + 1}`).join(' AND ');
     const sql = `DELETE FROM ${tableName} WHERE ${whereClause}`;
 
     console.log(`Iniciando bulk delete de ${data.length} registros em ${tableName}`);

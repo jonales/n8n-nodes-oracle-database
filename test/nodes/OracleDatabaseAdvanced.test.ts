@@ -61,7 +61,7 @@ describe('OracleDatabaseAdvanced', () => {
 
     mockPool = { getConnection: jest.fn().mockResolvedValue(mockConnection) };
 
-    (OracleConnection as jest.Mock).mockImplementation(() => ({
+    (OracleConnection as unknown as jest.Mock).mockImplementation(() => ({
       getConnection: jest.fn().mockResolvedValue(mockConnection),
     }));
     (OracleConnectionPool.getPool as jest.Mock).mockResolvedValue(mockPool);

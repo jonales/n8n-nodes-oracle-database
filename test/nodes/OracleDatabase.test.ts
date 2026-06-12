@@ -28,7 +28,7 @@ describe('OracleDatabase', () => {
       execute: jest.fn().mockResolvedValue({ rows: [{ ID: 1, NAME: 'Alice' }] }),
       close: jest.fn().mockResolvedValue(undefined),
     };
-    (OracleConnection as jest.Mock).mockImplementation(() => ({
+    (OracleConnection as unknown as jest.Mock).mockImplementation(() => ({
       getConnection: jest.fn().mockResolvedValue(mockConnection),
     }));
   });
@@ -162,9 +162,12 @@ describe('OracleDatabase', () => {
       await (node as any).execute.call(mockFns);
 
       const [calledQuery, calledBinds] = mockConnection.execute.mock.calls[0];
-      expect(calledQuery).not.toContain(':ids');
+      // Each value becomes a unique bind param prefixed with the original name
+      const bindKeys = Object.keys(calledBinds);
+      expect(bindKeys).toHaveLength(3);
+      expect(bindKeys.every((k) => k.startsWith('ids'))).toBe(true);
+      // The original bare :ids placeholder is replaced with a parenthesized list
       expect(calledQuery).toContain('(');
-      expect(Object.keys(calledBinds)).toHaveLength(3);
     });
   });
 });
