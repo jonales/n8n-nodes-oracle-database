@@ -27,6 +27,7 @@
     "lint": "n8n-node lint",
     "lint:fix": "n8n-node lint --fix",
     "release": "n8n-node release",
+    "sync-version": "node scripts/sync-version.js",
     "prepublishOnly": "npm run build",
     "test": "jest",
     "test:coverage": "jest --coverage",
