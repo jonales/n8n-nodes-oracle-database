@@ -7,6 +7,28 @@ e este projeto adota [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.1.2] - 2026-06-13
+
+### 🔧 Fixed
+
+- ✅ **Compatibilidade n8n UI Install** - Remover `peerDependencies` que causava conflito de resolução
+- ✅ **Instalação via Package Manager** - Agora instala sem erros pela UI do n8n
+- ✅ **Dependency Resolution** - Simplificar dependências para máxima compatibilidade
+
+### 📦 Changes
+
+- Remover `"peerDependencies": { "n8n-workflow": "*" }`
+- Mover `n8n-workflow` para `devDependencies` (já estava lá)
+- Simplificar resolução de dependências
+
+### 🎯 Impact
+
+- Instalação pela UI do n8n: ✓ Agora funciona
+- Instalação manual: ✓ Continua funcionando
+- Compatibilidade: ✓ Total com todas as versões n8n
+
+---
+
 ## [1.1.1] - 2026-06-13
 
 ### 🐛 Fixed
