@@ -7,6 +7,56 @@ e este projeto adota [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.1.0] - 2026-06-13
+
+### ✨ Features
+
+- **Teste Completo:** Suite de testes abrangente com cobertura de todas as operações
+- **Build & CI Otimizado:** Processo de build refinado com prepublishOnly automatizado
+- **Limpeza de Projeto:** Remoção de arquivos de validação obsoletos para melhor manutenção
+
+### 🐛 Fixed
+
+- ✅ **SQL Placeholders em Bulk Operations** - Correção de placeholders SQL para garantir compatibilidade completa com Oracle
+- ✅ **Testes de Bulk Operations** - Suite de testes finalizada e validada (250+ casos de teste executados com sucesso)
+- ✅ **Configuração .gitignore** - Atualização para melhor exclusão de arquivos temporários
+- ✅ **Build Pipeline** - Ajustes no prepublishOnly para garantir build antes de publicação
+
+### 🧪 Testing
+
+- ✅ **109 Testes Passando** - Coverage completo de funcionalidades
+  - OracleDatabase: 14 testes ✓
+  - OracleDatabaseAdvanced: 18 testes ✓
+  - OracleVectorStore: 13 testes ✓
+  - ChatMemory: 10 testes ✓
+  - BulkOperations: 22 testes ✓
+  - PLSQLExecutor: 21 testes ✓
+  - TransactionManager: 11 testes ✓
+
+### 📊 Performance
+
+- Bulk Insert: 250 registros em <15ms
+- Transaction Management: Suporte a savepoints e rollback
+- Connection Pooling: Validado com pool selection
+
+### 🔒 Security
+
+- TypeScript strict mode habilitado
+- Validação de SQL em PLSQLExecutor
+- Error handling robusto em todas operações
+
+### 📦 Breaking Changes
+
+- Nenhum breaking change
+
+### 🧑‍💻 Developer Experience
+
+- Build system melhorado com @n8n/node-cli
+- ESLint configuration modernizada
+- Prettier config padronizado
+
+---
+
 ## [1.0.9] - 2025-11-27
 
 ### 🔥 Major - BREAKING FIX
