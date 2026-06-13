@@ -7,6 +7,22 @@ e este projeto adota [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.1.1] - 2026-06-13
+
+### 🐛 Fixed
+
+- ✅ **Erro de Carregamento no n8n** - Adicionar `main` entry point em package.json
+- ✅ **Package Configuration** - Incluir index.js e oracle.svg nos arquivos publicados
+- ✅ **Entry Point Validation** - Melhorar descritivo do pacote para compatibilidade n8n
+
+### 📦 Changes
+
+- Adicionar arquivo `index.js` como main entry point
+- Copiar `oracle.svg` para raiz do projeto
+- Atualizar `package.json` com fields corretos
+
+---
+
 ## [1.1.0] - 2026-06-13
 
 ### ✨ Features

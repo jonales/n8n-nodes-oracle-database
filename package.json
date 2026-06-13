@@ -1,7 +1,7 @@
 {
   "name": "@jonales/n8n-nodes-oracle-database",
   "type": "commonjs",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Oracle Database node com recursos avançados para cargas pesadas e Oracle 19c+. Suporte completo para PL/SQL, bulk operations, connection pooling e Oracle Cloud Infrastructure.",
   "keywords": [
     "n8n-community-node-package",
@@ -17,8 +17,11 @@
     "type": "git",
     "url": "git+https://github.com/jonales/n8n-nodes-oracle-database.git"
   },
+  "main": "index.js",
   "files": [
-    "dist"
+    "dist",
+    "index.js",
+    "oracle.svg"
   ],
   "scripts": {
     "dev": "n8n-node dev",
