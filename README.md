@@ -18,7 +18,7 @@
 
 Advanced **Oracle Database** node for [n8n](https://n8n.io/) with enterprise features for heavy workloads and complete support for **Oracle 19c+** and **Oracle 23ai**.
 
-> **Version 1.1.2** — Official n8n build system (`@n8n/node-cli`), full thin/thick mode support per credential.
+> **Version 1.1.4** — Official n8n build system (`@n8n/node-cli`), full thin/thick mode support per credential.
 
 ---
 
@@ -347,7 +347,7 @@ LinkedIn: [jonatasmeireles](https://www.linkedin.com/in/jonatasmeireles/)
 
 Node avançado **Oracle Database** para [n8n](https://n8n.io/) com recursos empresariais para cargas pesadas e suporte completo ao **Oracle 19c+** e **Oracle 23ai**.
 
-> **Versão 1.1.2** — Build oficial n8n (`@n8n/node-cli`), suporte completo thin/thick mode por credencial.
+> **Versão 1.1.4** — Build oficial n8n (`@n8n/node-cli`), suporte completo thin/thick mode por credencial.
 
 ---
 
