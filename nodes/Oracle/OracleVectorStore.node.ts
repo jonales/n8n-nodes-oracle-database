@@ -445,8 +445,8 @@ export class OracleVectorStore implements INodeType {
     defaults: {
       name: 'Oracle Vector Store',
     },
-    inputs: ['main' as NodeConnectionType],
-    outputs: ['main' as NodeConnectionType],
+    inputs: [{ type: 'main' as NodeConnectionType }],
+    outputs: [{ type: 'main' as NodeConnectionType }],
     credentials: [
       {
         name: 'oracleCredentials',

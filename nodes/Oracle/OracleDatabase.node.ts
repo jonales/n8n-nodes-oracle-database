@@ -129,8 +129,8 @@ export class OracleDatabase implements INodeType {
     defaults: {
       name: 'Oracle Database',
     },
-    inputs: ['main' as NodeConnectionType],
-    outputs: ['main' as NodeConnectionType],
+    inputs: [{ type: 'main' as NodeConnectionType }],
+    outputs: [{ type: 'main' as NodeConnectionType }],
     credentials: [
       {
         name: 'oracleCredentials',

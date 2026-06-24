@@ -275,8 +275,8 @@ export class OracleChatMemory implements INodeType {
     defaults: {
       name: 'Oracle Chat Memory',
     },
-    inputs: ['main' as NodeConnectionType],
-    outputs: ['main' as NodeConnectionType],
+    inputs: [{ type: 'main' as NodeConnectionType }],
+    outputs: [{ type: 'main' as NodeConnectionType }],
     credentials: [
       {
         name: 'oracleCredentials',
