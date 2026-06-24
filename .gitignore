@@ -101,3 +101,8 @@ instantclient_21_8/
 home/
 script/test-connection.js
 .claude/worktrees/agent-afdec842277d7c3e9/
+tmp_require.js
+tmp_ins_post.js
+test-node-check.js
+n8n_logs_after_restart.txt
+RELEASE_NOTES.md
