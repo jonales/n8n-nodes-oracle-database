@@ -6,7 +6,6 @@ import {
   INodeExecutionData,
   INodeType,
   INodeTypeDescription,
-  NodeConnectionType,
   NodeOperationError,
 } from 'n8n-workflow';
 import oracledb from 'oracledb';
@@ -129,8 +128,8 @@ export class OracleDatabase implements INodeType {
     defaults: {
       name: 'Oracle Database',
     },
-    inputs: [{ type: 'main' as NodeConnectionType }],
-    outputs: [{ type: 'main' as NodeConnectionType }],
+    inputs: ['main'],
+    outputs: ['main'],
     credentials: [
       {
         name: 'oracleCredentials',
@@ -219,5 +218,3 @@ export class OracleDatabase implements INodeType {
     return [returnData];
   }
 }
-
-

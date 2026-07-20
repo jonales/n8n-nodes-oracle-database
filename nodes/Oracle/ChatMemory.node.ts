@@ -3,7 +3,6 @@ import {
   INodeExecutionData,
   INodeType,
   INodeTypeDescription,
-  NodeConnectionType,
   NodeOperationError,
 } from 'n8n-workflow';
 import oracledb, { Connection } from 'oracledb';
@@ -143,7 +142,7 @@ export class OracleChatMemoryOperations {
 
       const metadata = JSON.stringify({
         timestamp: new Date().toISOString(),
-        nodeId: this.node.id,
+        nodeId: this.node.parameters.id,
         ...metadataObj,
       });
 
@@ -347,8 +346,8 @@ export class OracleChatMemory implements INodeType {
     defaults: {
       name: 'Oracle Chat Memory',
     },
-    inputs: [{ type: 'main' as NodeConnectionType }],
-    outputs: [{ type: 'main' as NodeConnectionType }],
+    inputs: ['main'],
+    outputs: ['main'],
     credentials: [
       {
         name: 'oracleCredentials',

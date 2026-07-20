@@ -143,7 +143,7 @@ export class OracleConnection implements DatabaseConnection {
         );
       }
       if (errorMessage.includes('DPI-1072')) {
-        this.log('info', 'Oracle Client já inicializado anteriormente');
+        this.log('warn', 'Oracle Client já inicializado anteriormente. Nova configuração de libDir/configDir será ignorada.');
         OracleConnection.clientInitialized = true;
         return;
       }
@@ -260,9 +260,12 @@ export class OracleConnection implements DatabaseConnection {
   /**
 	 * Função de logging controlada por logLevel do config
 	 */
-  private log(level: 'info' | 'debug', ...args: any[]) {
+  private log(level: 'info' | 'debug' | 'warn', ...args: any[]) {
     const configuredLevel = this.connectionConfig.logLevel || 'info';
     if (level === 'info' && ['info', 'debug'].includes(configuredLevel)) {
+      console.log(...args);
+    }
+    if (level === 'warn' && ['info', 'debug', 'warn'].includes(configuredLevel)) {
       console.log(...args);
     }
     if (level === 'debug' && configuredLevel === 'debug') {

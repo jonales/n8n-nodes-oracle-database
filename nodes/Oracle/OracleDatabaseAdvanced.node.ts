@@ -4,7 +4,6 @@ import {
   INodeExecutionData,
   INodeType,
   INodeTypeDescription,
-  NodeConnectionType,
   NodeOperationError,
 } from 'n8n-workflow';
 
@@ -184,8 +183,8 @@ export class OracleDatabaseAdvanced implements INodeType {
     defaults: {
       name: 'Oracle Database Advanced',
     },
-    inputs: [{ type: 'main' as NodeConnectionType }],
-    outputs: [{ type: 'main' as NodeConnectionType }],
+    inputs: ['main'],
+    outputs: ['main'],
     credentials: [
       {
         name: 'oracleCredentials',
@@ -388,5 +387,3 @@ export class OracleDatabaseAdvanced implements INodeType {
     return [returnItems];
   }
 }
-
-
