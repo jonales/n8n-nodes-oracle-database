@@ -8,7 +8,24 @@ import {
 } from 'n8n-workflow';
 import oracledb, { Connection } from 'oracledb';
 
-import {OracleConnectionPool} from './core';
+import { OracleConnectionPool } from './core';
+
+/**
+ * Nomes de identificadores Oracle (tabelas, índices, constraints) só podem
+ * conter letras, números e underscore, e devem começar com letra.
+ * Isso também evita injeção via interpolação direta de tableName no SQL.
+ */
+const IDENTIFIER_REGEX = /^[A-Za-z][A-Za-z0-9_]{0,29}$/;
+
+function assertValidIdentifier(node: any, value: string, fieldLabel: string): void {
+  if (!IDENTIFIER_REGEX.test(value)) {
+    throw new NodeOperationError(
+      node,
+      `${fieldLabel} inválido: "${value}". Use apenas letras, números e underscore, ` +
+        'começando com uma letra (máx. 30 caracteres).',
+    );
+  }
+}
 
 export class OracleChatMemoryOperations {
   private executeFunctions: IExecuteFunctions;
@@ -17,11 +34,24 @@ export class OracleChatMemoryOperations {
     this.executeFunctions = executeFunctions;
   }
 
+  private get node() {
+    return this.executeFunctions.getNode();
+  }
+
   async setupTable(
     connection: Connection,
     tableName: string,
   ): Promise<INodeExecutionData[]> {
+    assertValidIdentifier(this.node, tableName, 'Table Name');
+
     try {
+      // Nomes de constraint/índice namespaced pela tabela: no Oracle esses
+      // nomes são únicos POR SCHEMA, não por tabela. Sem o prefixo, criar
+      // uma segunda tabela via este node (schema compartilhado) falharia
+      // com ORA-02264 (constraint name already used).
+      const constraintName = `chk_${tableName}_msg_type`.substring(0, 30);
+      const indexName = `idx_${tableName}_session`.substring(0, 30);
+
       const createTableSQL = `
         BEGIN
           EXECUTE IMMEDIATE '
@@ -32,14 +62,13 @@ export class OracleChatMemoryOperations {
               content CLOB NOT NULL,
               timestamp_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
               metadata CLOB,
-              CONSTRAINT chk_message_type CHECK (message_type IN ('user', 'assistant', 'system'))
+              CONSTRAINT ${constraintName} CHECK (message_type IN (''user'', ''assistant'', ''system''))
             )
           ';
-          DBMS_OUTPUT.PUT_LINE('Tabela ${tableName} criada com sucesso');
         EXCEPTION
           WHEN OTHERS THEN
             IF SQLCODE = -955 THEN
-              DBMS_OUTPUT.PUT_LINE('Tabela ${tableName} já existe');
+              NULL; -- Tabela já existe, segue normalmente
             ELSE
               RAISE;
             END IF;
@@ -50,7 +79,7 @@ export class OracleChatMemoryOperations {
 
       const createIndexSQL = `
         BEGIN
-          EXECUTE IMMEDIATE 'CREATE INDEX idx_${tableName}_session ON ${tableName}(session_id)';
+          EXECUTE IMMEDIATE 'CREATE INDEX ${indexName} ON ${tableName}(session_id)';
         EXCEPTION
           WHEN OTHERS THEN
             IF SQLCODE != -955 THEN
@@ -70,24 +99,34 @@ export class OracleChatMemoryOperations {
         },
       ]);
     } catch (error: unknown) {
-      throw new Error(
+      throw new NodeOperationError(
+        this.node,
         `Erro ao configurar tabela: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
 
+  /**
+   * Processa uma mensagem para um item específico do input (por índice),
+   * em vez de sempre olhar inputData[0]. Isso permite que o node receba
+   * múltiplos itens (ex: vindos de um loop/Split in Batches) e grave todos,
+   * não apenas o primeiro.
+   */
   async addMessage(
     connection: Connection,
     sessionId: string,
     tableName: string,
     memoryType: string,
-  ): Promise<INodeExecutionData[]> {
+    itemIndex: number,
+  ): Promise<INodeExecutionData> {
+    assertValidIdentifier(this.node, tableName, 'Table Name');
+
     try {
-      const inputData = this.executeFunctions.getInputData();
-      const messageData = inputData[0]?.json;
+      const items = this.executeFunctions.getInputData();
+      const messageData = items[itemIndex]?.json;
 
       if (!messageData) {
-        throw new Error('Nenhum dado de mensagem fornecido no input');
+        throw new Error(`Nenhum dado de mensagem fornecido no input (item ${itemIndex})`);
       }
 
       const content =
@@ -104,7 +143,7 @@ export class OracleChatMemoryOperations {
 
       const metadata = JSON.stringify({
         timestamp: new Date().toISOString(),
-        nodeId: this.executeFunctions.getNode().id,
+        nodeId: this.node.id,
         ...metadataObj,
       });
 
@@ -124,8 +163,8 @@ export class OracleChatMemoryOperations {
         { autoCommit: true },
       );
 
-      return this.executeFunctions.helpers.returnJsonArray([
-        {
+      return {
+        json: {
           success: true,
           sessionId,
           messageType: memoryType,
@@ -133,10 +172,14 @@ export class OracleChatMemoryOperations {
           rowsAffected: result.rowsAffected,
           operation: 'addMessage',
         },
-      ]);
+      };
     } catch (error: unknown) {
-      throw new Error(
-        `Erro ao adicionar mensagem: ${error instanceof Error ? error.message : String(error)}`,
+      throw new NodeOperationError(
+        this.node,
+        `Erro ao adicionar mensagem (item ${itemIndex}): ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+        { itemIndex },
       );
     }
   }
@@ -146,6 +189,8 @@ export class OracleChatMemoryOperations {
     sessionId: string,
     tableName: string,
   ): Promise<INodeExecutionData[]> {
+    assertValidIdentifier(this.node, tableName, 'Table Name');
+
     try {
       const selectSQL = `
         SELECT
@@ -165,21 +210,42 @@ export class OracleChatMemoryOperations {
         { sessionId },
         {
           outFormat: oracledb.OUT_FORMAT_OBJECT,
+          // Força CLOB (content/metadata) a virem como string em vez de
+          // objeto Lob/stream. Isso é feito aqui explicitamente para não
+          // depender de uma configuração global (oracledb.fetchAsString)
+          // estar (ou não) setada no OracleConnectionPool.
+          fetchInfo: {
+            CONTENT: { type: oracledb.STRING },
+            METADATA: { type: oracledb.STRING },
+          },
         },
       );
 
-      const messages = (result.rows as any[]).map(row => ({
-        id: row.ID,
-        sessionId: row.SESSION_ID,
-        messageType: row.MESSAGE_TYPE,
-        content: row.CONTENT,
-        timestamp: row.TIMESTAMP_CREATED,
-        metadata: row.METADATA ? JSON.parse(row.METADATA) : null,
-      }));
+      const messages = (result.rows as any[]).map(row => {
+        let parsedMetadata: Record<string, unknown> | null = null;
+        if (row.METADATA) {
+          try {
+            parsedMetadata = JSON.parse(row.METADATA);
+          } catch {
+            // metadata corrompido/malformado: não derruba a leitura inteira
+            parsedMetadata = { _raw: row.METADATA, _parseError: true };
+          }
+        }
+
+        return {
+          id: row.ID,
+          sessionId: row.SESSION_ID,
+          messageType: row.MESSAGE_TYPE,
+          content: row.CONTENT,
+          timestamp: row.TIMESTAMP_CREATED,
+          metadata: parsedMetadata,
+        };
+      });
 
       return this.executeFunctions.helpers.returnJsonArray(messages);
     } catch (error: unknown) {
-      throw new Error(
+      throw new NodeOperationError(
+        this.node,
         `Erro ao recuperar mensagens: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
@@ -190,6 +256,8 @@ export class OracleChatMemoryOperations {
     sessionId: string,
     tableName: string,
   ): Promise<INodeExecutionData[]> {
+    assertValidIdentifier(this.node, tableName, 'Table Name');
+
     try {
       const deleteSQL = `DELETE FROM ${tableName} WHERE session_id = :sessionId`;
 
@@ -210,7 +278,8 @@ export class OracleChatMemoryOperations {
         },
       ]);
     } catch (error: unknown) {
-      throw new Error(
+      throw new NodeOperationError(
+        this.node,
         `Erro ao limpar memória: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
@@ -221,6 +290,8 @@ export class OracleChatMemoryOperations {
     sessionId: string,
     tableName: string,
   ): Promise<INodeExecutionData[]> {
+    assertValidIdentifier(this.node, tableName, 'Table Name');
+
     try {
       const summarySQL = `
         SELECT
@@ -257,7 +328,8 @@ export class OracleChatMemoryOperations {
         },
       ]);
     } catch (error: unknown) {
-      throw new Error(
+      throw new NodeOperationError(
+        this.node,
         `Erro ao obter resumo: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
@@ -332,17 +404,14 @@ export class OracleChatMemory implements INodeType {
         name: 'tableName',
         type: 'string',
         default: 'CHAT_MEMORY',
-        description: 'Nome da tabela para armazenar as mensagens',
+        description:
+          'Nome da tabela para armazenar as mensagens (apenas letras, números e underscore)',
       },
     ],
   };
 
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     const credentials = await this.getCredentials('oracleCredentials');
-    const operation = this.getNodeParameter('operation', 0) as string;
-    const sessionId = this.getNodeParameter('sessionId', 0) as string;
-    const memoryType = this.getNodeParameter('memoryType', 0) as string;
-    const tableName = this.getNodeParameter('tableName', 0) as string;
 
     const oracleCredentials = {
       user: String(credentials.user),
@@ -354,6 +423,12 @@ export class OracleChatMemory implements INodeType {
       errorUrl: credentials.errorUrl ? String(credentials.errorUrl) : undefined,
     };
 
+    const items = this.getInputData();
+    // Operações não incrementais (mesma tabela/sessão pra toda a execução)
+    // ainda usam o item 0 como referência de parâmetros, mas addMessage
+    // agora processa TODOS os itens de input, não só o primeiro.
+    const operation = this.getNodeParameter('operation', 0) as string;
+
     let connection: Connection | undefined;
     let returnData: INodeExecutionData[] = [];
     const chatMemoryOps = new OracleChatMemoryOperations(this);
@@ -363,30 +438,56 @@ export class OracleChatMemory implements INodeType {
       connection = await pool.getConnection();
 
       switch (operation) {
-      case 'setup':
-        returnData = await chatMemoryOps.setupTable(connection, tableName);
-        break;
-      case 'addMessage':
-        returnData = await chatMemoryOps.addMessage(
-          connection,
-          sessionId,
-          tableName,
-          memoryType,
-        );
-        break;
-      case 'getMessages':
-        returnData = await chatMemoryOps.getMessages(connection, sessionId, tableName);
-        break;
-      case 'clearMemory':
-        returnData = await chatMemoryOps.clearMemory(connection, sessionId, tableName);
-        break;
-      case 'getSummary':
-        returnData = await chatMemoryOps.getSummary(connection, sessionId, tableName);
-        break;
-      default:
-        throw new NodeOperationError(this.getNode(), `Operação "${operation}" não suportada`);
+        case 'setup': {
+          const tableName = this.getNodeParameter('tableName', 0) as string;
+          returnData = await chatMemoryOps.setupTable(connection, tableName);
+          break;
+        }
+        case 'addMessage': {
+          // Processa cada item de input individualmente: sessionId,
+          // tableName e memoryType podem ser expressions diferentes
+          // por item (ex: vindo de dados anteriores no workflow).
+          for (let i = 0; i < items.length; i++) {
+            const sessionId = this.getNodeParameter('sessionId', i) as string;
+            const tableName = this.getNodeParameter('tableName', i) as string;
+            const memoryType = this.getNodeParameter('memoryType', i) as string;
+
+            const itemResult = await chatMemoryOps.addMessage(
+              connection,
+              sessionId,
+              tableName,
+              memoryType,
+              i,
+            );
+            returnData.push(itemResult);
+          }
+          break;
+        }
+        case 'getMessages': {
+          const sessionId = this.getNodeParameter('sessionId', 0) as string;
+          const tableName = this.getNodeParameter('tableName', 0) as string;
+          returnData = await chatMemoryOps.getMessages(connection, sessionId, tableName);
+          break;
+        }
+        case 'clearMemory': {
+          const sessionId = this.getNodeParameter('sessionId', 0) as string;
+          const tableName = this.getNodeParameter('tableName', 0) as string;
+          returnData = await chatMemoryOps.clearMemory(connection, sessionId, tableName);
+          break;
+        }
+        case 'getSummary': {
+          const sessionId = this.getNodeParameter('sessionId', 0) as string;
+          const tableName = this.getNodeParameter('tableName', 0) as string;
+          returnData = await chatMemoryOps.getSummary(connection, sessionId, tableName);
+          break;
+        }
+        default:
+          throw new NodeOperationError(this.getNode(), `Operação "${operation}" não suportada`);
       }
     } catch (error) {
+      if (error instanceof NodeOperationError) {
+        throw error;
+      }
       throw new NodeOperationError(this.getNode(), `Chat Memory Error: ${error}`);
     } finally {
       if (connection) {
@@ -397,5 +498,3 @@ export class OracleChatMemory implements INodeType {
     return [returnData];
   }
 }
-
-
