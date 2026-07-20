@@ -36,6 +36,20 @@ export class OracleVectorStoreOperations {
     }
 
     try {
+      // Adicionar verificação de versão do Oracle
+      const versionResult = await connection.execute(
+        `SELECT version FROM v$instance`,
+      );
+
+      const versionString = (versionResult.rows?.[0] as any)?.[0] as string;
+      const majorVersion = parseInt(versionString.split('.')[0], 10);
+
+      if (majorVersion < 23) {
+        throw new Error(
+          'Oracle Vector Store requer Oracle Database 23ai ou superior. Versão atual: ' + versionString
+        );
+      }
+
       const createTableSQL = `
         DECLARE
           table_exists NUMBER;
@@ -391,7 +405,7 @@ export class OracleVectorStoreOperations {
         {
           id: document.ID,
           content: document.CONTENT,
-          embedding: document.EMBEDDING ? JSON.parse(document.EMBEDDING) : null,
+          embedding: document.EMBEDDING,
           metadata: document.METADATA ? JSON.parse(document.METADATA) : null,
           createdAt: document.CREATED_AT,
           updatedAt: document.UPDATED_AT,
