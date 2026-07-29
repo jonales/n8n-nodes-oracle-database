@@ -18,7 +18,7 @@
 
 Advanced **Oracle Database** node for [n8n](https://n8n.io/) with enterprise features for heavy workloads and complete support for **Oracle 19c+** and **Oracle 23ai**.
 
-> **Version 1.1.7** — Official n8n build system (`@n8n/node-cli`), full thin/thick mode support per credential.
+> **Version 1.1.8** — Official n8n build system (`@n8n/node-cli`), full thin/thick mode support per credential.
 
 ---
 
@@ -244,6 +244,8 @@ Use Thick when you need:
 
 ## Development
 
+### NPM Scripts
+
 ```bash
 npm install          # Install dependencies
 npm run build        # Compile TypeScript
@@ -251,6 +253,23 @@ npm run dev          # Watch mode
 npm run lint         # ESLint check
 npm run lint:fix     # ESLint auto-fix
 ```
+
+### Local Environment with Docker
+
+To test and debug the node in a clean, isolated n8n environment, you can use the included `docker-compose.yml` file:
+
+1.  **Start n8n:**
+    ```bash
+    docker-compose up
+    ```
+    This command will start an n8n container on port `5678` and mount your node's code directly into it.
+
+2.  **Access n8n:**
+    Open `http://localhost:5678` in your browser.
+
+3.  **Development:**
+    Any changes you make to the source code (`.ts`) will be reflected in the container. Just remember to run `npm run build` to compile the changes to JavaScript. After building, restart the container (`docker-compose restart` or `Ctrl+C` and `docker-compose up`) for n8n to load the new version of the node.
+
 
 ---
 
@@ -347,7 +366,7 @@ LinkedIn: [jonatasmeireles](https://www.linkedin.com/in/jonatasmeireles/)
 
 Node avançado **Oracle Database** para [n8n](https://n8n.io/) com recursos empresariais para cargas pesadas e suporte completo ao **Oracle 19c+** e **Oracle 23ai**.
 
-> **Versão 1.1.7** — Build oficial n8n (`@n8n/node-cli`), suporte completo thin/thick mode por credencial.
+> **Versão 1.1.8** — Build oficial n8n (`@n8n/node-cli`), suporte completo thin/thick mode por credencial.
 
 ---
 
@@ -572,6 +591,8 @@ Use Thick quando precisar de:
 
 ## Desenvolvimento
 
+### Scripts NPM
+
 ```bash
 npm install          # Instalar dependências
 npm run build        # Compilar TypeScript
@@ -579,6 +600,23 @@ npm run dev          # Modo watch
 npm run lint         # Verificar ESLint
 npm run lint:fix     # Corrigir ESLint automaticamente
 ```
+
+### Ambiente Local com Docker
+
+Para testar e depurar o nó em um ambiente n8n limpo e isolado, você pode usar o arquivo `docker-compose.yml` incluído:
+
+1.  **Inicie o n8n:**
+    ```bash
+    docker-compose up
+    ```
+    Este comando irá iniciar um container n8n na porta `5678` e montará o código do seu nó diretamente nele.
+
+2.  **Acesse o n8n:**
+    Abra `http://localhost:5678` no seu navegador.
+
+3.  **Desenvolvimento:**
+    Qualquer alteração que você fizer no código-fonte (`.ts`) será refletida no container. Apenas lembre-se de rodar `npm run build` para compilar as alterações para JavaScript. Após o build, reinicie o container (`docker-compose restart` ou `Ctrl+C` e `docker-compose up`) para que o n8n carregue a nova versão do nó.
+
 
 ---
 

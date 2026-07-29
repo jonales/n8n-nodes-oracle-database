@@ -1,0 +1,21 @@
+services:
+  n8n:
+    image: n8nio/n8n
+    container_name: n8n-debug
+    restart: always
+    ports:
+      - "127.0.0.1:5678:5678"
+    user: "1000:1000"
+    environment:
+      - N8N_CUSTOM_EXTENSIONS=/custom-nodes/n8n-nodes-oracle-database
+      - N8N_LOG_LEVEL=debug
+      - NODE_FUNCTION_ALLOW_EXTERNAL=*
+      - GENERIC_TIMEZONE=America/Sao_Paulo
+      - N8N_SECURE_COOKIE=false
+    volumes:
+      - n8n_data:/home/node/.n8n
+      # Aponta para a raiz do pacote (precisa ter dist/ e package.json já buildados)
+      - ./:/custom-nodes/n8n-nodes-oracle-database
+
+volumes:
+  n8n_data:

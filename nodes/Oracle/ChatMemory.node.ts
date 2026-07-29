@@ -335,7 +335,7 @@ export class OracleChatMemoryOperations {
   }
 }
 
-export class OracleChatMemory implements INodeType {
+export class ChatMemory implements INodeType {
   description: INodeTypeDescription = {
     displayName: 'Oracle Chat Memory',
     name: 'oracleChatMemory',

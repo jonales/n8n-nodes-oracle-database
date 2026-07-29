@@ -7,6 +7,15 @@ e este projeto adota [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.1.8] - 2026-07-29
+
+### 🐛 Fixed
+
+- **Erro de Carregamento do Nó:** Corrigido o nome da classe principal no nó `ChatMemory` (de `OracleChatMemory` para `ChatMemory`), que causava o erro `TypeError: is not a constructor` e impedia o n8n de carregar o nó corretamente.
+- **Ambiente de Desenvolvimento:** Corrigido erro de permissão (`EACCES`) no arquivo `docker-compose.yml` ao especificar o usuário do container, facilitando a depuração local.
+
+---
+
 ## [1.1.2] - 2026-06-13
 
 ### 🔧 Fixed
