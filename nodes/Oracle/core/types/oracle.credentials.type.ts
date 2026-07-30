@@ -104,7 +104,7 @@ export const isOracleCredentials = (obj: any): obj is OracleCredentials => {
 };
 
 export const isThickModeCredentials = (credentials: OracleCredentials): boolean => {
-  return credentials.thinMode === false && !!credentials.libDir;
+  return credentials.thinMode === false;
 };
 
 export const isThinModeCredentials = (credentials: OracleCredentials): boolean => {
@@ -120,14 +120,11 @@ export class OracleCredentialsUtils {
 	 */
   static createConnectionConfig(credentials: OracleCredentials): OracleConnectionConfig {
     if (credentials.thinMode === false) {
-      // Modo thick
-      if (!credentials.libDir) {
-        throw new Error('libDir é obrigatório para modo thick');
-      }
-
+      // Modo thick: libDir é opcional. Se não fornecido, o driver buscará
+      // nas variáveis de ambiente (Ex: ORACLE_HOME).
       return {
         mode: 'thick',
-        libDir: credentials.libDir,
+        libDir: credentials.libDir, // Pode ser undefined
         configDir: credentials.configDir,
         errorUrl: credentials.errorUrl,
       };
@@ -152,20 +149,8 @@ export class OracleCredentialsUtils {
       };
     }
 
-    // Validação específica do modo thick
-    if (credentials.thinMode === false) {
-      if (!credentials.libDir) {
-        return {
-          isValid: false,
-          errorMessage: 'libDir é obrigatório para modo thick',
-          mode: 'thick',
-        };
-      }
-
-      // Aqui poderia verificar se o diretório existe, etc.
-      // Por simplicidade, assumimos válido se libDir está presente
-    }
-
+    // No modo thick, libDir é opcional. A validação de sua existência
+    // ou do fallback para variáveis de ambiente ocorrerá no momento da conexão.
     return {
       isValid: true,
       mode: credentials.thinMode === false ? 'thick' : 'thin',
