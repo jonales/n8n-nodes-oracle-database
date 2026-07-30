@@ -1,4 +1,4 @@
-import { OracleChatMemory } from '../../nodes/Oracle/ChatMemory.node';
+import { ChatMemory } from '../../nodes/Oracle/ChatMemory.node';
 import { OracleConnectionPool } from '../../nodes/Oracle/core';
 import { DEFAULT_CREDENTIALS, createMockExecuteFns } from '../helpers/mock-execute-fns';
 
@@ -16,13 +16,13 @@ jest.mock('../../nodes/Oracle/core', () => ({
   },
 }));
 
-describe('OracleChatMemory', () => {
-  let node: OracleChatMemory;
+describe('ChatMemory', () => {
+  let node: ChatMemory;
   let mockConnection: { execute: jest.Mock; close: jest.Mock; commit: jest.Mock };
   let mockPool: { getConnection: jest.Mock };
 
   beforeEach(() => {
-    node = new OracleChatMemory();
+    node = new ChatMemory();
 
     mockConnection = {
       execute: jest.fn().mockResolvedValue({ rows: [], rowsAffected: 1 }),
