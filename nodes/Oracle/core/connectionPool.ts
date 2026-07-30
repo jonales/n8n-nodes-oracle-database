@@ -1,5 +1,6 @@
 import oracledb from 'oracledb';
 
+import { buildOracleConnectionString } from '../../../credentials/Oracle.credentials';
 import { OracleCredentials } from './types/oracle.credentials.type';
 
 // Definição de tipo mais robusta para o Pool
@@ -146,12 +147,13 @@ export class OracleConnectionPool {
       ...userConfig,
       user: credentials.user,
       password: credentials.password,
-      connectionString: credentials.connectionString,
+      connectionString: buildOracleConnectionString(credentials),
     };
+    const finalConnectionString = poolConfig.connectionString;
 
     try {
-      const pool = await oracledb.createPool(poolConfig);
-      console.log(`Oracle Pool criado para ${credentials.user}@${credentials.connectionString}`);
+      const pool = await oracledb.createPool(poolConfig);      
+      console.log(`Oracle Pool criado para ${credentials.user}@${finalConnectionString}`);
       return pool;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -306,8 +308,8 @@ export class OracleConnectionPool {
 	 * Gerar chave única para o pool baseada nas credenciais
 	 */
   private static generatePoolKey(credentials: OracleCredentials): string {
-    const { user, connectionString } = credentials;
-    return `${user}@${connectionString}`;
+    const { user } = credentials;
+    return `${user}@${buildOracleConnectionString(credentials)}`;
   }
 
   /**
@@ -372,4 +374,3 @@ export class OracleConnectionPool {
     };
   }
 }
-

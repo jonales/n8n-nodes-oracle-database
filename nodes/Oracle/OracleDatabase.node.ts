@@ -23,6 +23,9 @@ export class OracleDatabaseOperations {
     const oracleCredentials = {
       user: String(credentials.user),
       password: String(credentials.password),
+      host: String(credentials.host),
+      port: Number(credentials.port),
+      serviceName: String(credentials.serviceName),
       connectionString: String(credentials.connectionString),
       thinMode: credentials.thinMode !== false,
       libDir: credentials.libDir ? String(credentials.libDir) : undefined,
@@ -143,6 +146,7 @@ export class OracleDatabase implements INodeType {
         type: 'string',
         typeOptions: {
           alwaysOpenEditWindow: true,
+          rows: 10,
         },
         default: '',
         placeholder: 'SELECT id, name FROM product WHERE id < :param_name',

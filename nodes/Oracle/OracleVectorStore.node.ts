@@ -606,6 +606,9 @@ export class OracleVectorStore implements INodeType {
     const oracleCredentials = {
       user: String(credentials.user),
       password: String(credentials.password),
+      host: String(credentials.host),
+      port: Number(credentials.port),
+      serviceName: String(credentials.serviceName),
       connectionString: String(credentials.connectionString),
       thinMode: credentials.thinMode !== false,
       libDir: credentials.libDir ? String(credentials.libDir) : undefined,

@@ -16,6 +16,22 @@ services:
       - n8n_data:/home/node/.n8n
       # Aponta para a raiz do pacote (precisa ter dist/ e package.json já buildados)
       - ./:/custom-nodes/n8n-nodes-oracle-database
+    depends_on:
+      - oracle-db
+
+  oracle-db:
+    image: gvenzl/oracle-free:latest
+    container_name: oracle-db-test
+    restart: always
+    ports:
+      - "1521:1521"
+    environment:
+      - ORACLE_PASSWORD=ora123
+      - APP_USER=ora
+      - APP_USER_PASSWORD=ora123
+    volumes:
+      - oracle_data:/container-entrypoint-initdb.d
 
 volumes:
   n8n_data:
+  oracle_data:

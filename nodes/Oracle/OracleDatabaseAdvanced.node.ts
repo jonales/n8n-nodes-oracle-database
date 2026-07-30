@@ -299,6 +299,9 @@ export class OracleDatabaseAdvanced implements INodeType {
     const credentials: OracleCredentials = {
       user: String(rawCredentials.user),
       password: String(rawCredentials.password),
+      host: String(rawCredentials.host),
+      port: Number(rawCredentials.port),
+      serviceName: String(rawCredentials.serviceName),
       connectionString: String(rawCredentials.connectionString),
       thinMode: rawCredentials.thinMode !== false, // Default true
       libDir: rawCredentials.libDir ? String(rawCredentials.libDir) : undefined,

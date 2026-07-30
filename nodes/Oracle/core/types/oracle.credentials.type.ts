@@ -5,11 +5,20 @@ export interface OracleCredentials {
 	/** Senha do usuário do banco de dados */
 	password: string;
 
+	/** O nome do host ou endereço IP do seu servidor Oracle. */
+	host: string;
+
+	/** A porta na qual o listener do Oracle está sendo executado. */
+	port: number;
+
+	/** O Service Name ou SID do banco de dados Oracle. */
+	serviceName: string;
+
 	/** String de conexão Oracle (host:port/service ou TNS alias) */
 	connectionString: string;
 
-	/** Define se usa modo thin (true) ou thick (false). Padrão: true */
-	thinMode?: boolean;
+	/** Define se usa modo thin (true) ou thick (false). */
+	thinMode: boolean;
 
 	// === Campos específicos para modo thick ===
 
@@ -164,6 +173,9 @@ export class OracleCredentialsUtils {
     return {
       user: legacyCredentials.user || '',
       password: legacyCredentials.password || '',
+      host: legacyCredentials.host || '',
+      port: legacyCredentials.port || 1521,
+      serviceName: legacyCredentials.serviceName || '',
       connectionString: legacyCredentials.connectionString || '',
       thinMode: legacyCredentials.thinMode !== false, // Default true para compatibilidade
       libDir: legacyCredentials.libDir,

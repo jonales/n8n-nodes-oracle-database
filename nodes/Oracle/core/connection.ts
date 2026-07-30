@@ -1,5 +1,6 @@
 import oracledb, { Connection, ConnectionAttributes, InitialiseOptions } from 'oracledb';
 import { DatabaseConnection } from './interfaces/database.interface';
+import { buildOracleConnectionString } from '../../../credentials/Oracle.credentials';
 import { OracleCredentials } from './types/oracle.credentials.type';
 
 export type ConnectionMode = 'auto' | 'thin' | 'thick';
@@ -26,12 +27,12 @@ export class OracleConnection implements DatabaseConnection {
     credentials: OracleCredentials,
     connectionConfig: ConnectionConfig = { mode: 'auto' },
   ) {
-    const { user, password, connectionString } = credentials;
+    const { user, password } = credentials;
 
     this.databaseConfig = {
       user,
       password,
-      connectionString,
+      connectionString: buildOracleConnectionString(credentials),
     } as ConnectionAttributes;
 
     // Preenche valores padrão
