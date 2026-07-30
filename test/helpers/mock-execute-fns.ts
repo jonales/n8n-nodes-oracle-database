@@ -23,7 +23,11 @@ export function createMockExecuteFns(
     ),
     getCredentials: jest.fn().mockResolvedValue(credentials),
     getInputData: jest.fn().mockReturnValue(inputData),
-    getNode: jest.fn().mockReturnValue({ id: 'test-node-id', name: 'Oracle Test Node' }),
+    getNode: jest.fn().mockReturnValue({
+      id: 'test-node-id',
+      name: 'Oracle Test Node',
+      parameters: { id: 'test-node-id' },
+    }),
     getWorkflow: jest.fn().mockReturnValue({ id: 'test-workflow-id' }),
     helpers: {
       returnJsonArray: jest.fn((items: any[]) =>
