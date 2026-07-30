@@ -26,10 +26,13 @@ describe('OracleVectorStore', () => {
     node = new OracleVectorStore();
 
     mockConnection = {
-      execute: jest.fn().mockResolvedValue({ rowsAffected: 1 }),
+      execute: jest.fn(),
       close: jest.fn().mockResolvedValue(undefined),
       commit: jest.fn().mockResolvedValue(undefined),
     };
+
+    // Default mock for execute
+    mockConnection.execute.mockResolvedValue({ rowsAffected: 1 });
 
     mockPool = { getConnection: jest.fn().mockResolvedValue(mockConnection) };
     (OracleConnectionPool.getPool as jest.Mock).mockResolvedValue(mockPool);
@@ -43,6 +46,11 @@ describe('OracleVectorStore', () => {
 
   describe('execute() — setup operation', () => {
     it('creates table and index, then commits', async () => {
+      // Mock the version check query
+      mockConnection.execute
+        .mockResolvedValueOnce({ rows: [['23.4.0.0.0']] }) // First call for version check
+        .mockResolvedValue({ rowsAffected: 1 }); // Subsequent calls
+
       const mockFns = createMockExecuteFns({
         operation: 'setup',
         collectionName: 'DOCS',
@@ -51,7 +59,7 @@ describe('OracleVectorStore', () => {
 
       const result = await (node as any).execute.call(mockFns);
 
-      expect(mockConnection.execute).toHaveBeenCalledTimes(2);
+      expect(mockConnection.execute).toHaveBeenCalledTimes(3); // version + create table + create index
       expect(mockConnection.commit).toHaveBeenCalled();
       expect(result[0][0].json).toMatchObject({ success: true, operation: 'setup' });
     });
@@ -159,6 +167,10 @@ describe('OracleVectorStore', () => {
 
   describe('execute() — connection lifecycle', () => {
     it('closes connection after successful execution', async () => {
+      mockConnection.execute
+        .mockResolvedValueOnce({ rows: [['23.4.0.0.0']] }) // Version check
+        .mockResolvedValue({ rowsAffected: 1 }); // Subsequent calls
+
       const mockFns = createMockExecuteFns({
         operation: 'setup',
         collectionName: 'DOCS',
@@ -169,7 +181,10 @@ describe('OracleVectorStore', () => {
     });
 
     it('closes connection even when operation throws', async () => {
-      mockConnection.execute.mockRejectedValue(new Error('ORA-00942: table not found'));
+      mockConnection.execute
+        .mockResolvedValueOnce({ rows: [['23.4.0.0.0']] }) // Version check
+        .mockRejectedValue(new Error('ORA-00942: table not found')); // Subsequent calls fail
+
       const mockFns = createMockExecuteFns({
         operation: 'setup',
         collectionName: 'DOCS',
@@ -181,6 +196,10 @@ describe('OracleVectorStore', () => {
     });
 
     it('acquires connection from pool using correct credentials', async () => {
+      mockConnection.execute
+        .mockResolvedValueOnce({ rows: [['23.4.0.0.0']] }) // Version check
+        .mockResolvedValue({ rowsAffected: 1 }); // Subsequent calls
+
       const creds = { ...DEFAULT_CREDENTIALS, thinMode: false, libDir: '/opt/oracle' };
       const mockFns = createMockExecuteFns(
         { operation: 'setup', collectionName: 'DOCS', vectorDimension: 128 },
