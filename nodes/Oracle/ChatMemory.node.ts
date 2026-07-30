@@ -443,6 +443,9 @@ export class ChatMemory implements INodeType {
           break;
         }
         case 'addMessage': {
+          if (items.length === 0) {
+            throw new NodeOperationError(this.getNode(), 'Nenhum dado de entrada fornecido');
+          }
           // Processa cada item de input individualmente: sessionId,
           // tableName e memoryType podem ser expressions diferentes
           // por item (ex: vindo de dados anteriores no workflow).
