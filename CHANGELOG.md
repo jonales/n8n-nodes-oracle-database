@@ -7,6 +7,17 @@ e este projeto adota [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.2.0] - 2026-07-31
+
+### ✨ Added
+
+- **Instalador do Oracle Client:** Adicionado um script para automatizar o download e a extração do Oracle Instant Client (`npm run install:oracle-client`).
+- **Detecção de SO:** O script detecta automaticamente o sistema operacional (Windows, Linux, macOS) e baixa a versão correta do cliente.
+- **Instalação Local:** O cliente é extraído para um diretório local (`.oracledb`), evitando a necessidade de permissões de administrador e modificações no sistema.
+- **Testes:** Adicionados testes unitários para o novo script de instalação.
+
+---
+
 ## [1.1.8] - 2026-07-29
 
 ### 🐛 Fixed
