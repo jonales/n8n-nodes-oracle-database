@@ -36,7 +36,7 @@ export class Oracle implements ICredentialType {
 	name = 'oracleCredentials';
 	displayName = 'Oracle Credentials';
 	documentationUrl = 'oracleCredentials';
-	logo = 'file:credentials/oracle.svg';
+	icon: Icon = 'file:oracle.svg';
 
 	properties: INodeProperties[] = [
 		{
