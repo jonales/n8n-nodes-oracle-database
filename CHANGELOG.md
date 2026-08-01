@@ -1,9 +1,24 @@
-# Changelog
+## [1.3.0] - 2026-08-01
 
-Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
+### 💥 Breaking Change
 
-O formato é baseado em [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-e este projeto adota [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+- **Remoção da Auto-instalação do Oracle Client:** O mecanismo de auto-instalação do Oracle Instant Client foi removido. Os usuários devem agora instalar manualmente o Oracle Instant Client e configurar seu ambiente conforme o `INSTRUCOES_CONFIGURACAO.md`.
+- **Remoção do "Thin Mode":** A opção "Thin Mode" nas credenciais foi removida. O node agora opera exclusivamente no "Thick Mode", que requer as bibliotecas do Oracle Client.
+
+### ♻️ Refactor
+
+- **Simplificação da Lógica de Conexão:** A lógica interna de conexão (`nodes/Oracle/core/connection.ts`) foi drasticamente simplificada, removendo a detecção automática de modo e a complexidade associada à auto-instalação.
+- **Simplificação das Credenciais:** O arquivo de credenciais (`credentials/Oracle.credentials.ts`) foi revisado para remover opções obsoletas e fornecer um link claro para o guia de configuração manual.
+- **Limpeza de Arquivos e Dependências:**
+  - O diretório `install` foi removido.
+  - Dependências relacionadas à instalação (ex: `adm-zip`) foram removidas do `package.json`.
+  - O `gulpfile.js` e `.gitignore` foram ajustados conforme necessário.
+
+### 📝 Documentation
+
+- **Guia de Configuração Detalhado:** Criado `INSTRUCOES_CONFIGURACAO.md` com instruções passo a passo para a instalação manual do Oracle Instant Client.
+- **Atualização do README.md:** O `README.md` foi ajustado para remover instruções de instalação redundantes e referenciar o novo `INSTRUCOES_CONFIGURACAO.md`.
+- **Sincronização de Versão:** O script `sync-version` foi utilizado para garantir que a versão no `README.md` esteja atualizada.
 
 ---
 
