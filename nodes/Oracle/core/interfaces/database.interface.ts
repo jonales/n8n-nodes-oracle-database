@@ -26,9 +26,7 @@ export interface DatabaseConnection {
 	 * @returns Objeto com detalhes da conexão
 	 */
 	getConnectionInfo(): {
-		mode: string;
 		clientVersion?: string;
-		serverVersion?: string;
 	};
 }
 

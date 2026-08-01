@@ -108,3 +108,4 @@ n8n_logs_after_restart.txt
 RELEASE_NOTES.md
 test/integration/credentials.json
 test-connection.js
+client-cache

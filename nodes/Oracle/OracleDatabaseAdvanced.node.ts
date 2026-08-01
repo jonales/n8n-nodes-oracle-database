@@ -296,18 +296,14 @@ export class OracleDatabaseAdvanced implements INodeType {
 
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     const rawCredentials = await this.getCredentials('oracleCredentials');
-    const credentials: OracleCredentials = {
+    const credentials = {
       user: String(rawCredentials.user),
       password: String(rawCredentials.password),
       host: String(rawCredentials.host),
       port: Number(rawCredentials.port),
       serviceName: String(rawCredentials.serviceName),
       connectionString: String(rawCredentials.connectionString),
-      thinMode: rawCredentials.thinMode !== false, // Default true
-      libDir: rawCredentials.libDir ? String(rawCredentials.libDir) : undefined,
-      configDir: rawCredentials.configDir ? String(rawCredentials.configDir) : undefined,
-      errorUrl: rawCredentials.errorUrl ? String(rawCredentials.errorUrl) : undefined,
-    };
+    } as OracleCredentials;
 
     const operationType = this.getNodeParameter('operationType', 0) as string;
     const connectionPoolType = this.getNodeParameter('connectionPool', 0) as string;
@@ -318,15 +314,8 @@ export class OracleDatabaseAdvanced implements INodeType {
     const oracleAdvancedOps = new OracleDatabaseAdvancedOperations(this);
 
     try {
-      const connectionConfig: ConnectionConfig = {
-        mode: credentials.thinMode !== false ? 'thin' : 'thick',
-        libDir: credentials.libDir,
-        configDir: credentials.configDir,
-        errorUrl: credentials.errorUrl,
-      };
-
       if (connectionPoolType === 'single') {
-        const oracleConnection = new OracleConnection(credentials, connectionConfig);
+        const oracleConnection = OracleConnection.createConnection(credentials);
         connection = await oracleConnection.getConnection();
       } else {
         const poolConfig = oracleAdvancedOps.getPoolConfig(connectionPoolType);
@@ -361,18 +350,14 @@ export class OracleDatabaseAdvanced implements INodeType {
         throw new Error(`Tipo de operação não suportado: ${operationType}`);
       }
 
-      // Log de estatísticas de conexão
-      const mode = credentials.thinMode !== false ? 'thin' : 'thick';
-      console.log(`Operação concluída em modo ${mode}: ${returnItems.length} itens retornados`);
+      console.log(`Operação concluída: ${returnItems.length} itens retornados`);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      const mode = credentials.thinMode !== false ? 'thin' : 'thick';
-
+			const errorMessage = error instanceof Error ? error.message : String(error);
       throw new NodeOperationError(
         this.getNode(),
-        `Oracle Advanced Error (modo ${mode}): ${errorMessage}`,
+        `Oracle Advanced Error: ${errorMessage}`,
         {
-          description: 'Verifique suas credenciais, configurações de modo e comandos SQL/PL/SQL',
+          description: 'Verifique suas credenciais, configurações e comandos SQL/PL/SQL',
         },
       );
     } finally {

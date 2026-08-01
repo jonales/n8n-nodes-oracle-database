@@ -64,15 +64,6 @@ n8n-nodes-oracle-database/
 
 ## Features
 
-### Connection Modes
-
-| Mode | Oracle Client | Best for |
-|------|---------------|---------|
-| **Thin** (default) | Not required — pure JavaScript driver | Containers, cloud, quick setup |
-| **Thick** | Required — Oracle Instant Client | Wallets, Kerberos, LDAP, maximum performance |
-
-> The mode is set **per credential** — each credential can use a different mode independently.
-
 ### Available Nodes
 
 #### Oracle Database (Basic)
@@ -471,50 +462,13 @@ Histórico de chat por sessão armazenado no Oracle.
 
 ## Instalação
 
-### Thin Mode (sem Oracle Client)
+Para utilizar este node, é necessário instalar o pacote via npm:
 
 ```bash
 npm install @jonales/n8n-nodes-oracle-database
 ```
 
-Funciona imediatamente em qualquer ambiente Node.js — containers, cloud, local.
-
-### Thick Mode (Oracle Instant Client obrigatório)
-
-Instale o Oracle Instant Client primeiro, depois o pacote.
-
-**Linux / macOS:**
-
-```bash
-wget https://download.oracle.com/otn_software/linux/instantclient/2340000/instantclient-basic-linux.x64-23.4.0.24.05.zip
-unzip instantclient-basic-linux.x64-23.4.0.24.05.zip -d /opt/oracle/
-export LD_LIBRARY_PATH=/opt/oracle/instantclient_23_4:$LD_LIBRARY_PATH
-
-npm install @jonales/n8n-nodes-oracle-database
-```
-
-**Windows:**
-
-```powershell
-# Extraia o Oracle Instant Client em C:\oracle\instantclient_23_4
-# Adicione ao PATH do sistema:
-$env:PATH += ";C:\oracle\instantclient_23_4"
-
-npm install @jonales/n8n-nodes-oracle-database
-```
-
-**Docker (thick mode):**
-
-```dockerfile
-FROM n8nio/n8n:latest
-
-RUN apt-get update && apt-get install -y wget unzip libaio1
-RUN wget https://download.oracle.com/otn_software/linux/instantclient/2340000/instantclient-basic-linux.x64-23.4.0.24.05.zip
-RUN unzip instantclient-basic-linux.x64-23.4.0.24.05.zip -d /opt/oracle/
-ENV LD_LIBRARY_PATH=/opt/oracle/instantclient_23_4
-
-RUN npm install @jonales/n8n-nodes-oracle-database
-```
+**ATENÇÃO:** Este node requer que o **Oracle Instant Client** esteja instalado e configurado no seu ambiente. Consulte o [Guia de Configuração Detalhado](https://github.com/JonatasAP/n8n-nodes-oracle-database/blob/main/INSTRUCOES_CONFIGURACAO.md) para instruções de instalação e configuração do Oracle Instant Client em diferentes sistemas operacionais (Linux, Windows, macOS) e para uso em Docker.
 
 ---
 
@@ -525,9 +479,6 @@ RUN npm install @jonales/n8n-nodes-oracle-database
 | **User** | Usuário Oracle | `hr` ou `system` |
 | **Password** | Senha do usuário | `sua_senha` |
 | **Connection String** | Host:porta/serviço ou TNS alias | `localhost:1521/XEPDB1` |
-| **Connection Mode** | Thin (padrão) ou Thick | `Thin Mode` |
-| **Oracle Client Directory** | Apenas thick — caminho do Instant Client | `/opt/oracle/instantclient_23_4` |
-| **Oracle Config Directory** | Apenas thick — local do tnsnames.ora | `/opt/oracle/network/admin` |
 
 **Exemplos de Connection String:**
 
@@ -549,25 +500,6 @@ MEU_TNS_ALIAS
 ```
 
 ---
-
-## Thin vs Thick Mode — Quando Usar Cada Um
-
-### Thin Mode
-
-- Nenhuma instalação adicional
-- Funciona em Docker, Kubernetes, funções cloud
-- Suporta a maioria dos recursos Oracle (SQL, PL/SQL, bind variables, LOBs)
-- Padrão em todos os quatro nodes
-
-### Thick Mode
-
-Use Thick quando precisar de:
-- Oracle Wallets (mTLS / Autonomous Database sem connection string completa)
-- Autenticação Kerberos ou LDAP
-- Oracle Net Services (configuração avançada de rede)
-- Compatibilidade com recursos legados Oracle (pré-12c)
-
-> **Importante:** O oracledb inicializa o modo do driver **uma vez por processo**. Se a primeira conexão no processo do n8n for Thin, todas as conexões subsequentes naquele processo também serão Thin. Para garantir o Thick mode, configure todas as credenciais como Thick Mode — ou reinicie o n8n após alterar o modo.
 
 ---
 

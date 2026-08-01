@@ -11,7 +11,8 @@ import {
 import oracledb from 'oracledb';
 
 import {
-  OracleConnection
+  OracleConnection,
+  OracleCredentials
 } from './core';
 
 
@@ -27,18 +28,9 @@ export class OracleDatabaseOperations {
       port: Number(credentials.port),
       serviceName: String(credentials.serviceName),
       connectionString: String(credentials.connectionString),
-      thinMode: credentials.thinMode !== false,
-      libDir: credentials.libDir ? String(credentials.libDir) : undefined,
-      configDir: credentials.configDir ? String(credentials.configDir) : undefined,
-      errorUrl: credentials.errorUrl ? String(credentials.errorUrl) : undefined,
-    };
+    } as OracleCredentials;
 
-    const db = new OracleConnection(oracleCredentials, {
-      mode: oracleCredentials.thinMode ? 'thin' : 'thick',
-      libDir: oracleCredentials.libDir,
-      configDir: oracleCredentials.configDir,
-      errorUrl: oracleCredentials.errorUrl,
-    });
+		const db = OracleConnection.createConnection(oracleCredentials);
     const connection = await db.getConnection();
     let returnItems: INodeExecutionData[] = [];
 

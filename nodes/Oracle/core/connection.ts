@@ -1,362 +1,171 @@
-import oracledb, { Connection, ConnectionAttributes, InitialiseOptions } from 'oracledb';
+import { Connection, ConnectionAttributes, InitialiseOptions } from 'oracledb';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+let oracledb = require('oracledb');
 import { DatabaseConnection } from './interfaces/database.interface';
 import { buildOracleConnectionString } from '../../../credentials/Oracle.credentials';
 import { OracleCredentials } from './types/oracle.credentials.type';
 
-export type ConnectionMode = 'auto' | 'thin' | 'thick';
-
 export interface ConnectionConfig {
-	mode?: ConnectionMode; // 'auto' tenta detectar o ideal
-	oracleClientPath?: string;
-	configDir?: string;
-	errorUrl?: string;
-	libDir?: string;
 	fetchAsStringTypes?: any[]; // Para CLOB, BLOB, etc.
 	logLevel?: 'none' | 'info' | 'debug';
-	language?: 'pt' | 'en'; // Pré-requisito para i18n futuro
-	autoInstall?: boolean; // Auto-instala Oracle Client se necessário
 }
 
 export class OracleConnection implements DatabaseConnection {
-  private databaseConfig: ConnectionAttributes;
-  private connectionConfig: ConnectionConfig;
-  private static clientInitialized = false;
-  private detectedConfig?: any;
+	private databaseConfig: ConnectionAttributes;
+	private connectionConfig: ConnectionConfig;
+	private static clientInitialized = false;
 
-  constructor(
-    credentials: OracleCredentials,
-    connectionConfig: ConnectionConfig = { mode: 'auto' },
-  ) {
-    const { user, password } = credentials;
+	constructor(credentials: OracleCredentials, connectionConfig: ConnectionConfig = {}) {
+		const { user, password } = credentials;
 
-    this.databaseConfig = {
-      user,
-      password,
-      connectionString: buildOracleConnectionString(credentials),
-    } as ConnectionAttributes;
+		this.databaseConfig = {
+			user,
+			password,
+			connectionString: buildOracleConnectionString(credentials),
+		} as ConnectionAttributes;
 
-    // Preenche valores padrão
-    this.connectionConfig = {
-      mode: connectionConfig.mode ?? 'auto',
-      libDir: connectionConfig.libDir,
-      configDir: connectionConfig.configDir,
-      errorUrl: connectionConfig.errorUrl,
-      fetchAsStringTypes: connectionConfig.fetchAsStringTypes ?? [oracledb.CLOB],
-      logLevel: connectionConfig.logLevel ?? 'info',
-      language: connectionConfig.language ?? 'pt', // futuro i18n
-      autoInstall: connectionConfig.autoInstall ?? true, // Auto-instala por padrão
-    };
+		// Preenche valores padrão
+		this.connectionConfig = {
+			fetchAsStringTypes: connectionConfig.fetchAsStringTypes ?? [oracledb.CLOB],
+			logLevel: connectionConfig.logLevel ?? 'info',
+		};
 
-    // Inicialização assíncrona será feita no getConnection()
-  }
+		// A inicialização do cliente será feita de forma síncrona no construtor.
+		this.initializeThickClient();
+	}
 
-  /**
-	 * Detecta e configura Oracle Client automaticamente via variáveis de ambiente
+	/**
+	 * Inicializa o modo thick (Oracle Client libraries).
+	 * Assume que as variáveis de ambiente (LD_LIBRARY_PATH, etc.) estão configuradas
+	 * ou que o Instant Client está em um local padrão do sistema.
 	 */
-  private async autoDetectOracleClient(): Promise<void> {
-    if (this.detectedConfig) {
-      return;
-    }
-    await this.fallbackDetection();
-  }
+	private initializeThickClient(): void {
+		if (OracleConnection.clientInitialized) {
+			this.log('warn', 'Oracle Client já inicializado anteriormente. Ignorando nova tentativa.');
+			return;
+		}
 
-  /**
-	 * Detecção manual como fallback
-	 */
-  private async fallbackDetection(): Promise<void> {
-    if (this.connectionConfig.mode === 'auto') {
-      this.connectionConfig.mode = this.detectBestMode();
-    }
+		try {
+			// initOracleClient pode ser chamado sem parâmetros para usar variáveis de ambiente.
+			oracledb.initOracleClient();
+			OracleConnection.clientInitialized = true;
+			this.log('info', 'Oracle Client inicializado em modo THICK.');
+		} catch (error: unknown) {
+			const errorMessage = error instanceof Error ? error.message : String(error);
 
-    this.detectedConfig = {
-      mode: this.connectionConfig.mode,
-      available: this.connectionConfig.mode === 'thick',
-      type: 'fallback',
-    };
-  }
+			if (errorMessage.includes('DPI-1072')) {
+				// Already initialized
+				this.log('warn', 'Oracle Client já foi inicializado. Isso pode acontecer em ambientes com recarregamento a quente.');
+				OracleConnection.clientInitialized = true;
+				return;
+			}
 
-  /**
-	 * Detectar modo ideal: se Oracle Client disponível, usa 'thick'; senão, 'thin'.
-	 */
-  private detectBestMode(): 'thin' | 'thick' {
-    if (
-      process.env.LD_LIBRARY_PATH ||
-			process.env.DYLD_LIBRARY_PATH ||
-			process.env.PATH?.toLowerCase().includes('oracle') ||
-			this.connectionConfig.libDir
-    ) {
-      this.log('info', 'Detecção automática: modo THICK selecionado');
-      return 'thick';
-    }
-    this.log('info', 'Detecção automática: modo THIN selecionado');
-    return 'thin';
-  }
+			// Para qualquer outro erro (incluindo DPI-1047: "Cannot locate a 64-bit Oracle Client library"),
+			// lança um erro claro e acionável.
+			throw new Error(
+				'Falha ao inicializar o Oracle Client.\n' +
+					'Causas prováveis:\n' +
+					'1. O Oracle Instant Client não foi encontrado no seu sistema.\n' +
+					'2. As variáveis de ambiente (LD_LIBRARY_PATH no Linux/macOS ou PATH no Windows) não estão configuradas corretamente para apontar para o diretório do Instant Client.\n' +
+					'3. O client pode ter dependências de sistema faltando (ex: libaio1 no Linux).\n\n' +
+					`--> Consulte o guia de configuração para ajuda.\n` +
+					`--> Erro original: ${errorMessage}`,
+			);
+		}
+	}
 
-  /**
-	 * Configura cliente Oracle conforme o modo
-	 */
-  private async configureConnectionMode(): Promise<void> {
-    // Executa auto-detecção primeiro
-    await this.autoDetectOracleClient();
-
-    if (this.connectionConfig.mode === 'thick' && !OracleConnection.clientInitialized) {
-      await this.initializeThickClient();
-    } else if (this.connectionConfig.mode === 'thin') {
-      this.configureThinMode();
-    }
-  }
-
-  /**
-	 * Inicializa o modo thick (Oracle Client libraries)
-	 */
-  private async initializeThickClient(): Promise<void> {
-    try {
-      const initOptions: InitialiseOptions = {};
-
-      if (this.connectionConfig.libDir) {
-        initOptions.libDir = this.connectionConfig.libDir;
-      }
-      if (this.connectionConfig.configDir) {
-        initOptions.configDir = this.connectionConfig.configDir;
-      }
-      if (this.connectionConfig.errorUrl) {
-        initOptions.errorUrl = this.connectionConfig.errorUrl;
-      }
-
-      oracledb.initOracleClient(initOptions);
-
-      OracleConnection.clientInitialized = true;
-
-      this.log('info', 'Oracle Client inicializado em modo THICK');
-      this.log('debug', `libDir: ${initOptions.libDir || 'default'}`);
-      this.log('debug', `configDir: ${initOptions.configDir || 'default'}`);
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-
-      if (errorMessage.includes('DPI-1047')) {
-        throw new Error(
-          'Oracle Client libraries não encontradas.\n' +
-						'Verifique:\n' +
-						'1. Oracle Instant Client está instalado\n' +
-						'2. LD_LIBRARY_PATH (Linux/macOS) ou PATH (Windows) inclui o Oracle Client\n' +
-						`3. Caminho configurado nas credenciais: ${this.connectionConfig.libDir || 'não definido'}\n` +
-						`Erro original: ${errorMessage}`,
-        );
-      }
-      if (errorMessage.includes('DPI-1072')) {
-        this.log('warn', 'Oracle Client já inicializado anteriormente. Nova configuração de libDir/configDir será ignorada.');
-        OracleConnection.clientInitialized = true;
-        return;
-      }
-      throw new Error(
-        `Falha ao inicializar Oracle Client em modo THICK: ${errorMessage}\n` +
-					'Verifique:\n' +
-					'- Oracle Instant Client instalado\n' +
-					'- LD_LIBRARY_PATH (Linux/macOS) ou PATH (Windows) configurado\n' +
-					'- Permissões de acesso às bibliotecas\n' +
-					'- Compatibilidade da versão do Oracle Client',
-      );
-    }
-  }
-
-  /**
-	 * Configura modo thin (sem Oracle Client)
-	 */
-  private configureThinMode(): void {
-    oracledb.fetchAsString = this.connectionConfig.fetchAsStringTypes!;
-    this.log('info', 'Oracle Client configurado em modo THIN (sem Oracle Client necessário)');
-  }
-
-  /**
+	/**
 	 * Estabelece conexão com Oracle DB
 	 */
-  async getConnection(): Promise<Connection> {
-    try {
-      // Configura o modo de conexão se ainda não foi feito
-      await this.configureConnectionMode();
+	async getConnection(): Promise<Connection> {
+		try {
+			const connection = await oracledb.getConnection(this.databaseConfig);
 
-      const connection = await oracledb.getConnection(this.databaseConfig);
+			this.log(
+				'info',
+				`Conexão estabelecida como ${this.databaseConfig.user} em ${this.databaseConfig.connectionString}`,
+			);
 
-      this.log(
-        'info',
-        `Conexão estabelecida [${this.connectionConfig.mode?.toUpperCase()}] como ${this.databaseConfig.user} em ${this.databaseConfig.connectionString}`,
-      );
+			return connection;
+		} catch (error: unknown) {
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			throw new Error(
+				`Falha na conexão com o banco de dados: ${errorMessage}\n` +
+					'Verifique se:\n' +
+					'- O Oracle Client está instalado e funcionando corretamente.\n' +
+					'- O `tnsnames.ora` está configurado (se estiver usando um alias TNS).\n' +
+					'- As credenciais (usuário/senha) e a string de conexão estão corretas.\n' +
+					'- Há conectividade de rede entre o n8n e o servidor do banco de dados Oracle.',
+			);
+		}
+	}
 
-      return connection;
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-
-      if (this.connectionConfig.mode === 'thick') {
-        throw new Error(
-          `Falha na conexão em modo THICK: ${errorMessage}\n` +
-						'Verifique:\n' +
-						'- Oracle Client está funcionando corretamente\n' +
-						'- TNS names está configurado (se usando TNS)\n' +
-						'- Credenciais e string de conexão\n' +
-						'- Conectividade de rede com o banco Oracle',
-        );
-      } else {
-        throw new Error(
-          `Falha na conexão em modo THIN: ${errorMessage}\n` +
-						'Verifique:\n' +
-						'- String de conexão está correta\n' +
-						'- Credenciais estão válidas\n' +
-						'- Conectividade de rede com o banco Oracle\n' +
-						'- Firewall não está bloqueando a porta do Oracle',
-        );
-      }
-    }
-  }
-
-  /**
+	/**
 	 * Realiza um teste simples de conectividade (Health Check)
 	 */
-  async testConnection(): Promise<boolean> {
-    try {
-      const conn = await this.getConnection();
-      try {
-        await conn.execute('SELECT 1 FROM DUAL');
-        this.log('info', 'Teste de conexão Oracle OK');
-        await conn.close();
-        return true;
-      } catch {
-        await conn.close();
-        throw new Error('Falha ao executar teste no banco Oracle.');
-      }
-    } catch (err) {
-      this.log('info', `Não foi possível conectar/testar o banco: ${String(err)}`);
-      return false;
-    }
-  }
+	async testConnection(): Promise<boolean> {
+		let conn: Connection | undefined;
+		try {
+			conn = await this.getConnection();
+			await conn.execute('SELECT 1 FROM DUAL');
+			this.log('info', 'Teste de conexão Oracle OK');
+			return true;
+		} catch (err) {
+			this.log('warn', `Não foi possível conectar/testar o banco: ${String(err)}`);
+			return false;
+		} finally {
+			if (conn) {
+				try {
+					await conn.close();
+				} catch (closeErr) {
+					this.log('warn', `Erro ao fechar conexão de teste: ${String(closeErr)}`);
+				}
+			}
+		}
+	}
 
-  /**
+	/**
 	 * Exibe informações da conexão e do cliente Oracle
 	 */
-  getConnectionInfo(): {
-		mode: string;
+	getConnectionInfo(): {
 		clientVersion?: string;
-		serverVersion?: string;
-		detectedConfig?: any;
-		} {
-    const info: any = {
-      mode: this.connectionConfig.mode,
-      clientVersion: undefined,
-      serverVersion: undefined,
-      detectedConfig: this.detectedConfig,
-    };
+	} {
+		const info: { clientVersion?: string } = {
+			clientVersion: 'unknown',
+		};
 
-    if (this.connectionConfig.mode === 'thick') {
-      try {
-        info.clientVersion = (oracledb as any).oracleClientVersionString;
-      } catch {
-        info.clientVersion = 'unknown';
-      }
-    } else {
-      info.clientVersion = 'thin driver (JS only)';
-    }
+		try {
+			info.clientVersion = (oracledb as any).oracleClientVersionString;
+		} catch (e) {
+			this.log('warn', 'Não foi possível obter a versão do Oracle Client.');
+		}
 
-    return info;
-  }
+		return info;
+	}
 
-  /**
+	/**
 	 * Função de logging controlada por logLevel do config
 	 */
-  private log(level: 'info' | 'debug' | 'warn', ...args: any[]) {
-    const configuredLevel = this.connectionConfig.logLevel || 'info';
-    if (level === 'info' && ['info', 'debug'].includes(configuredLevel)) {
-      console.log(...args);
-    }
-    if (level === 'warn' && ['info', 'debug', 'warn'].includes(configuredLevel)) {
-      console.log(...args);
-    }
-    if (level === 'debug' && configuredLevel === 'debug') {
-      console.debug(...args);
-    }
-  }
+	private log(level: 'info' | 'debug' | 'warn', ...args: any[]) {
+		const configuredLevel = this.connectionConfig.logLevel || 'info';
+		if (
+			(level === 'info' && ['info', 'debug'].includes(configuredLevel)) ||
+			(level === 'warn' && ['info', 'debug', 'warn'].includes(configuredLevel))
+		) {
+			console.log('[n8n-nodes-oracle]', ...args);
+		}
+		if (level === 'debug' && configuredLevel === 'debug') {
+			console.debug('[n8n-nodes-oracle]', ...args);
+		}
+	}
 
-  /**
-	 * Diagnóstico do modo thick, para automação/instaladores
+	/**
+	 * Fábrica para criar uma nova conexão Oracle.
 	 */
-  static validateThickModeRequirements(libDir?: string): {
-		isValid: boolean;
-		errors: string[];
-		recommendations: string[];
-	} {
-    const errors: string[] = [];
-    const recommendations: string[] = [];
-
-    const ldLibraryPath = process.env.LD_LIBRARY_PATH;
-    const dyldLibraryPath = process.env.DYLD_LIBRARY_PATH;
-    const path = process.env.PATH;
-
-    if (process.platform === 'linux' || process.platform === 'darwin') {
-      if (!ldLibraryPath && !dyldLibraryPath && !libDir) {
-        errors.push('LD_LIBRARY_PATH não está definido');
-        recommendations.push('Configure LD_LIBRARY_PATH apontando para o Oracle Instant Client');
-        recommendations.push('Configure o caminho do Oracle Client nas credenciais do node');
-      }
-    }
-
-    if (process.platform === 'win32' && !path?.toLowerCase().includes('oracle') && !libDir) {
-      errors.push('Oracle Client não encontrado no PATH');
-      recommendations.push('Adicione o diretório do Oracle Client ao PATH do Windows');
-      recommendations.push('Configure o caminho do Oracle Client nas credenciais do node');
-    }
-
-    if (
-      process.platform !== 'linux' &&
-			process.platform !== 'darwin' &&
-			process.platform !== 'win32'
-    ) {
-      errors.push(`Plataforma ${process.platform} pode não ser suportada para modo thick`);
-      recommendations.push('Considere usar modo thin para maior compatibilidade');
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-      recommendations,
-    };
-  }
-
-  /**
-	 * Fábrica para criar conexão em modo thin
-	 */
-  static createThinConnection(credentials: OracleCredentials): OracleConnection {
-    return new OracleConnection(credentials, { mode: 'thin' });
-  }
-
-  /**
-	 * Fábrica para criar conexão em modo thick
-	 */
-  static createThickConnection(
-    credentials: OracleCredentials,
-    options: {
-			libDir?: string;
-			configDir?: string;
-			errorUrl?: string;
-		} = {},
-  ): OracleConnection {
-    return new OracleConnection(credentials, {
-      mode: 'thick',
-      ...options,
-    });
-  }
-
-  /**
-	 * Fábrica para criar conexão com auto-detecção (recomendado)
-	 */
-  static createAutoConnection(
-    credentials: OracleCredentials,
-    options: {
-			autoInstall?: boolean;
-			logLevel?: 'none' | 'info' | 'debug';
-		} = {},
-  ): OracleConnection {
-    return new OracleConnection(credentials, {
-      mode: 'auto',
-      autoInstall: options.autoInstall ?? true,
-      logLevel: options.logLevel ?? 'info',
-    });
-  }
+	static createConnection(
+		credentials: OracleCredentials,
+		options: ConnectionConfig = {},
+	): OracleConnection {
+		return new OracleConnection(credentials, options);
+	}
 }
