@@ -1,3 +1,17 @@
+# CHANGELOG
+
+## [1.3.1] - 2026-08-01
+
+### 🐛 Fixed
+
+- **ChatMemory Build Error:** Corrected the import path for `BaseMemory` and `getInputValue` from `langchain/memory` to `@langchain/core/memory`, and updated `OracleChatMessageHistory` to extend `BaseMemory` instead of `BaseChatMemory`, resolving a build error caused by LangChain API changes.
+
+## [1.3.0] - 2026-08-01
+
+### 🐛 Fixed
+
+- **ChatMemory Build Error:** Corrected the import path for `BaseMemory` and `getInputValue` from `langchain/memory` to `@langchain/core/memory`, and updated `OracleChatMessageHistory` to extend `BaseMemory` instead of `BaseChatMemory`, resolving a build error caused by LangChain API changes.
+
 ## [1.3.0] - 2026-08-01
 
 ### 💥 Breaking Change

@@ -1,214 +1,239 @@
-import { ChatMemory } from '../../nodes/Oracle/ChatMemory.node';
+import {
+	AIMessage,
+	HumanMessage,
+	SystemMessage,
+	BaseMessage,
+} from '@langchain/core/messages';
+import { IExecuteFunctions, INode, INodeType, NodeOperationError } from 'n8n-workflow';
+import { OracleChatMessageHistory, ChatMemory } from '../../nodes/Oracle/ChatMemory.node';
 import { OracleConnectionPool } from '../../nodes/Oracle/core';
-import { DEFAULT_CREDENTIALS, createMockExecuteFns } from '../helpers/mock-execute-fns';
+import { createMockExecuteFns, DEFAULT_CREDENTIALS } from '../helpers/mock-execute-fns';
 
+// Mock oracledb and the connection pool
 jest.mock('oracledb', () => ({
-  OUT_FORMAT_OBJECT: 4,
-  STRING: 2001,
-  CLOB: 2017,
-  fetchAsString: [],
-  initOracleClient: jest.fn(),
+	getPool: jest.fn(),
+	getConnection: jest.fn(),
+	initOracleClient: jest.fn(),
+	OUT_FORMAT_OBJECT: 4,
+	STRING: 2001,
 }));
 
-jest.mock('../../nodes/Oracle/core', () => ({
-  OracleConnectionPool: {
-    getPool: jest.fn(),
-  },
+jest.mock('../../nodes/Oracle/core/connectionPool', () => ({
+	OracleConnectionPool: {
+		getPool: jest.fn(),
+	},
 }));
 
-describe('ChatMemory', () => {
-  let node: ChatMemory;
-  let mockConnection: { execute: jest.Mock; close: jest.Mock; commit: jest.Mock };
-  let mockPool: { getConnection: jest.Mock };
+const mockNode = {
+	getCredentials: jest.fn(),
+	getNode: jest.fn(),
+	getNodeParameter: jest.fn(),
+	getWorkflow: jest.fn(),
+	createNode: jest.fn(),
+} as unknown as INode;
 
-  beforeEach(() => {
-    node = new ChatMemory();
+describe('ChatMemory Node', () => {
+	let node: ChatMemory;
+	let mockPool: { getConnection: jest.Mock };
 
-    mockConnection = {
-      execute: jest.fn().mockResolvedValue({ rows: [], rowsAffected: 1 }),
-      close: jest.fn().mockResolvedValue(undefined),
-      commit: jest.fn().mockResolvedValue(undefined),
-    };
+	beforeEach(() => {
+		node = new ChatMemory();
+		mockPool = { getConnection: jest.fn() };
+		(OracleConnectionPool.getPool as jest.Mock).mockResolvedValue(mockPool);
+		jest.clearAllMocks();
+	});
 
-    mockPool = { getConnection: jest.fn().mockResolvedValue(mockConnection) };
-    (OracleConnectionPool.getPool as jest.Mock).mockResolvedValue(mockPool);
-  });
+	it('should have a correct description', () => {
+		expect(node.description.name).toBe('oracleChatMemory');
+		expect(node.description.group).toContain('memory');
+		expect(node.description.inputs).toEqual([]);
+		expect(node.description.outputs).toEqual(['main']);
+	});
 
-  describe('node description', () => {
-    it('has correct name identifier', () => {
-      expect(node.description.name).toBe('oracleChatMemory');
-    });
-  });
+	describe('execute method', () => {
+		let mockFns: IExecuteFunctions;
 
-  describe('execute() — setup operation', () => {
-    it('creates table and index then commits', async () => {
-      const mockFns = createMockExecuteFns({
-        operation: 'setup',
-        sessionId: '',
-        memoryType: 'user',
-        tableName: 'CHAT_MEMORY',
-      });
+		it('should return a memory object on successful execution', async () => {
+			mockFns = createMockExecuteFns({
+				sessionId: 'test-session',
+				tableName: 'TEST_TABLE',
+				contextWindowLength: 5,
+			});
 
-      const result = await (node as any).execute.call(mockFns);
+			const result = await node.execute.call(mockFns);
 
-      expect(mockConnection.execute).toHaveBeenCalledTimes(2);
-      expect(mockConnection.commit).toHaveBeenCalled();
-      expect(result[0][0].json).toMatchObject({ success: true, operation: 'setup' });
-    });
-  });
+			expect(OracleConnectionPool.getPool).toHaveBeenCalledWith(DEFAULT_CREDENTIALS);
+			expect(result.main[0][0].json.memory).toBeInstanceOf(OracleChatMessageHistory);
+		});
 
-  describe('execute() — addMessage operation', () => {
-    it('inserts message from input data', async () => {
-      mockConnection.execute.mockResolvedValue({ rowsAffected: 1 });
+		it('should throw NodeOperationError if sessionId is missing', async () => {
+			mockFns = createMockExecuteFns({
+				sessionId: '', // Empty sessionId
+				tableName: 'TEST_TABLE',
+			});
 
-      const mockFns = createMockExecuteFns(
-        {
-          operation: 'addMessage',
-          sessionId: 'session-123',
-          memoryType: 'user',
-          tableName: 'CHAT_MEMORY',
-        },
-        DEFAULT_CREDENTIALS,
-        [{ json: { content: 'Hello, how are you?' }, pairedItem: { item: 0 } }],
-      );
+			await expect(node.execute.call(mockFns)).rejects.toThrow(NodeOperationError);
+			await expect(node.execute.call(mockFns)).rejects.toThrow(
+				'O Session Key é obrigatório para a memória do chat.',
+			);
+		});
+	});
+});
 
-      const result = await (node as any).execute.call(mockFns);
+describe('OracleChatMessageHistory Class', () => {
+	let memory: OracleChatMessageHistory;
+	let mockConnection: { execute: jest.Mock; close: jest.Mock; commit: jest.Mock };
+	let mockPool: { getConnection: jest.Mock };
 
-      expect(mockConnection.execute).toHaveBeenCalledWith(
-        expect.stringContaining('INSERT INTO CHAT_MEMORY'),
-        expect.objectContaining({
-          sessionId: 'session-123',
-          messageType: 'user',
-          content: 'Hello, how are you?',
-        }),
-        expect.any(Object),
-      );
-      expect(result[0][0].json).toMatchObject({ success: true, operation: 'addMessage' });
-    });
+	const SESSION_ID = 'session-123';
+	const TABLE_NAME = 'N8N_CHAT_MEMORY';
 
-    it('throws when no input data is provided', async () => {
-      const mockFns = createMockExecuteFns(
-        { operation: 'addMessage', sessionId: 'session-123', memoryType: 'user', tableName: 'CHAT_MEMORY' },
-        DEFAULT_CREDENTIALS,
-        [],
-      );
+	beforeEach(() => {
+		mockConnection = {
+			execute: jest.fn().mockResolvedValue({ rows: [], rowsAffected: 1 }),
+			close: jest.fn().mockResolvedValue(undefined),
+			commit: jest.fn().mockResolvedValue(undefined),
+		};
+		mockPool = { getConnection: jest.fn().mockResolvedValue(mockConnection) };
+		memory = new OracleChatMessageHistory({
+			pool: mockPool as any,
+			sessionId: SESSION_ID,
+			node: mockNode,
+		});
+		jest.clearAllMocks();
+	});
 
-      await expect((node as any).execute.call(mockFns)).rejects.toThrow();
-    });
-  });
+	describe('ensureTable', () => {
+		it('should execute CREATE TABLE and CREATE INDEX on first call', async () => {
+			await (memory as any).ensureTable();
+			expect(mockConnection.execute).toHaveBeenCalledTimes(2);
+			expect(mockConnection.execute).toHaveBeenCalledWith(expect.stringContaining('CREATE TABLE'));
+			expect(mockConnection.execute).toHaveBeenCalledWith(expect.stringContaining('CREATE INDEX'));
+			expect(mockConnection.commit).toHaveBeenCalledTimes(1);
+			expect(mockConnection.close).toHaveBeenCalledTimes(1);
+		});
 
-  describe('execute() — getMessages operation', () => {
-    it('selects messages by session ID and maps to camelCase', async () => {
-      mockConnection.execute.mockResolvedValue({
-        rows: [
-          {
-            ID: 1,
-            SESSION_ID: 'session-123',
-            MESSAGE_TYPE: 'user',
-            CONTENT: 'Hello',
-            TIMESTAMP_CREATED: new Date('2024-01-01'),
-            METADATA: '{"key":"val"}',
-          },
-        ],
-      });
+		it('should not execute SQL on second call', async () => {
+			await (memory as any).ensureTable(); // First call
+			jest.clearAllMocks();
+			await (memory as any).ensureTable(); // Second call
+			expect(mockConnection.execute).not.toHaveBeenCalled();
+		});
 
-      const mockFns = createMockExecuteFns({
-        operation: 'getMessages',
-        sessionId: 'session-123',
-        tableName: 'CHAT_MEMORY',
-      });
+		it('should not throw if table already exists (SQLCODE -955)', async () => {
+			const error = new Error('table already exists') as any;
+			error.errorNum = 955;
+			mockConnection.execute.mockImplementation(async (sql: string) => {
+				if (sql.includes('CREATE TABLE')) {
+					throw error;
+				}
+				return { rows: [], rowsAffected: 0 };
+			});
 
-      const result = await (node as any).execute.call(mockFns);
+			await expect((memory as any).ensureTable()).resolves.not.toThrow();
+		});
+	});
 
-      expect(mockConnection.execute).toHaveBeenCalledWith(
-        expect.stringContaining('WHERE session_id = :sessionId'),
-        { sessionId: 'session-123' },
-        expect.any(Object),
-      );
-      expect(result[0][0].json).toMatchObject({
-        id: 1,
-        sessionId: 'session-123',
-        messageType: 'user',
-        metadata: { key: 'val' },
-      });
-    });
-  });
+	describe('addMessage', () => {
+		it('should execute an INSERT statement', async () => {
+			const message = new HumanMessage('Hello!');
+			await memory.addMessage(message);
 
-  describe('execute() — clearMemory operation', () => {
-    it('deletes messages for given session', async () => {
-      mockConnection.execute.mockResolvedValue({ rowsAffected: 3 });
+			expect(mockConnection.execute).toHaveBeenCalledWith(
+				expect.stringContaining(`INSERT INTO ${TABLE_NAME}`),
+				{
+					sessionId: SESSION_ID,
+					messageType: 'human',
+					content: 'Hello!',
+					metadata: '{}',
+				},
+				{ autoCommit: true },
+			);
+		});
+	});
 
-      const mockFns = createMockExecuteFns({
-        operation: 'clearMemory',
-        sessionId: 'session-123',
-        tableName: 'CHAT_MEMORY',
-      });
+	describe('getMessages', () => {
+		it('should execute a SELECT statement and return mapped messages', async () => {
+			const dbRows = [
+				{
+					MESSAGE_TYPE: 'human',
+					CONTENT: 'Hi!',
+					METADATA: '{}',
+				},
+				{
+					MESSAGE_TYPE: 'ai',
+					CONTENT: 'Hello! How can I help you?',
+					METADATA: '{"some":"data"}',
+				},
+			];
+			mockConnection.execute.mockResolvedValue({ rows: dbRows });
 
-      const result = await (node as any).execute.call(mockFns);
+			const messages = await memory.getMessages();
 
-      expect(mockConnection.execute).toHaveBeenCalledWith(
-        expect.stringContaining('DELETE FROM CHAT_MEMORY'),
-        { sessionId: 'session-123' },
-        expect.any(Object),
-      );
-      expect(result[0][0].json).toMatchObject({ success: true, messagesDeleted: 3 });
-    });
-  });
+			expect(mockConnection.execute).toHaveBeenCalledWith(
+				expect.stringContaining(`SELECT message_type, content, metadata`),
+				expect.any(Object),
+				expect.any(Object),
+			);
 
-  describe('execute() — getSummary operation', () => {
-    it('returns message count summary', async () => {
-      mockConnection.execute.mockResolvedValue({
-        rows: [{
-          TOTAL_MESSAGES: 10,
-          USER_MESSAGES: 5,
-          ASSISTANT_MESSAGES: 4,
-          SYSTEM_MESSAGES: 1,
-          FIRST_MESSAGE: new Date('2024-01-01'),
-          LAST_MESSAGE: new Date('2024-01-02'),
-        }],
-      });
+			expect(messages.length).toBe(2);
+			expect(messages[0]).toBeInstanceOf(HumanMessage);
+			expect(messages[1]).toBeInstanceOf(AIMessage);
+			expect(messages[1].content).toBe('Hello! How can I help you?');
+			expect(messages[1].additional_kwargs).toEqual({ some: 'data' });
+		});
 
-      const mockFns = createMockExecuteFns({
-        operation: 'getSummary',
-        sessionId: 'session-123',
-        tableName: 'CHAT_MEMORY',
-      });
+		it('should apply context window limit to the query', async () => {
+			memory = new OracleChatMessageHistory({
+				pool: mockPool as any,
+				sessionId: SESSION_ID,
+				contextWindowLength: 5,
+				node: mockNode,
+			});
+			await memory.getMessages();
 
-      const result = await (node as any).execute.call(mockFns);
+			expect(mockConnection.execute).toHaveBeenCalledWith(
+				expect.stringContaining('FETCH FIRST 10 ROWS ONLY'),
+				expect.any(Object),
+				expect.any(Object),
+			);
+		});
+	});
 
-      expect(result[0][0].json).toMatchObject({
-        sessionId: 'session-123',
-        totalMessages: 10,
-        userMessages: 5,
-        assistantMessages: 4,
-        systemMessages: 1,
-      });
-    });
-  });
+	describe('clear', () => {
+		it('should execute a DELETE statement for the session', async () => {
+			await memory.clear();
 
-  describe('execute() — connection lifecycle', () => {
-    it('closes connection after successful execution', async () => {
-      const mockFns = createMockExecuteFns({
-        operation: 'setup',
-        sessionId: '',
-        memoryType: 'user',
-        tableName: 'CHAT_MEMORY',
-      });
-      await (node as any).execute.call(mockFns);
-      expect(mockConnection.close).toHaveBeenCalled();
-    });
+			expect(mockConnection.execute).toHaveBeenCalledWith(
+				expect.stringContaining(`DELETE FROM ${TABLE_NAME}`),
+				{ sessionId: SESSION_ID },
+				{ autoCommit: true },
+			);
+		});
+	});
 
-    it('closes connection even when operation throws', async () => {
-      mockConnection.execute.mockRejectedValue(new Error('ORA-00942: table not found'));
-      const mockFns = createMockExecuteFns({
-        operation: 'setup',
-        sessionId: '',
-        memoryType: 'user',
-        tableName: 'CHAT_MEMORY',
-      });
+	describe('saveContext', () => {
+		it('should add both human and AI messages', async () => {
+			const inputs = { input: 'User input' };
+			const outputs = { output: 'AI output' };
 
-      await expect((node as any).execute.call(mockFns)).rejects.toThrow();
-      expect(mockConnection.close).toHaveBeenCalled();
-    });
-  });
+			await memory.saveContext(inputs, outputs);
+
+			expect(mockConnection.execute).toHaveBeenCalledTimes(2);
+
+			// Check Human Message
+			expect(mockConnection.execute).toHaveBeenCalledWith(
+				expect.any(String),
+				expect.objectContaining({ content: 'User input', messageType: 'human' }),
+				expect.any(Object),
+			);
+
+			// Check AI Message
+			expect(mockConnection.execute).toHaveBeenCalledWith(
+				expect.any(String),
+				expect.objectContaining({ content: 'AI output', messageType: 'ai' }),
+				expect.any(Object),
+			);
+		});
+	});
 });
